@@ -480,11 +480,6 @@ class Ui_mainTabs(QtGui.QWidget, ui_main_tabs.Ui_mainTabsForm):
             unique_id='ui_main/{0}/{1}'.format(self.current_namespace, self.current_project),
             long_abs_path=True))
 
-        # self.settings.beginGroup('ui_main_tab/{0}/{1}'.format(self.current_namespace, self.current_project))
-        # self.main_tabWidget.setCurrentIndex(int(self.settings.value('main_tabWidget_currentIndex', 0)))
-        # # self.main_tabWidget.tabBar().setTabButton(0, QtGui.QTabBar.LeftSide, QtGui.QWidget())
-        # self.settings.endGroup()
-
     def writeSettings(self):
         """
         Writing Settings
@@ -496,10 +491,7 @@ class Ui_mainTabs(QtGui.QWidget, ui_main_tabs.Ui_mainTabsForm):
             unique_id='ui_main/{0}/{1}'.format(self.current_namespace, self.current_project),
             long_abs_path=True)
 
-        # self.settings.beginGroup('ui_main_tab/{0}/{1}'.format(self.current_namespace, self.current_project))
-        # self.settings.setValue('main_tabWidget_currentIndex', int(self.main_tabWidget.currentIndex()))
         print('Done ui_main_tab settings write')
-        # self.settings.endGroup()
 
     def paintEvent(self, event):
         if not self.isCreated:

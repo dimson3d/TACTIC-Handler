@@ -1429,6 +1429,19 @@ def to_plain_text(html, strip=80):
     return plain_text
 
 
+def qsize_to_tuple(qsize):
+    return qsize.toTuple()
+
+
+def tuple_to_qsize(qtuple, qtype='size'):
+    if qtype == 'size':
+        return QtCore.QSize(qtuple[0], qtuple[1])
+    elif qtype == 'pos':
+        return QtCore.QPoint(qtuple[0], qtuple[1])
+    elif qtype == 'rect':
+        return QtCore.QRect(qtuple[0], qtuple[1], qtuple[2], qtuple[3])
+
+
 # CLASSES #
 
 class FileObject(object):

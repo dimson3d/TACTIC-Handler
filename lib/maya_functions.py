@@ -153,13 +153,17 @@ def inplace_checkin(progress_bar, virtual_snapshot, repo_name, update_versionles
 
     # saving maya scene
     try:
-        cmds.file(rename=full_scene_path)
+        if ext_type in ['mayaAscii', 'mayaBinary']:
+            cmds.file(rename=full_scene_path)
         renamed = True
     except:
         renamed = False
     try:
         if selected_objects:
-            cmds.file(exportSelected=selected_objects, type=ext_type, pr=True, eur=True)
+            if ext_type in ['mayaAscii', 'mayaBinary']:
+                cmds.file(exportSelected=selected_objects, type=ext_type, pr=True, eur=True)
+            else:
+                cmds.file(full_scene_path, exportSelected=selected_objects, type=ext_type, pr=True, eur=True)
         else:
             cmds.file(save=True, type=ext_type)
         saved = True

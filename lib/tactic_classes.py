@@ -448,6 +448,8 @@ class SType(object):
     def get_pipeline(self):
         return self.pipeline
 
+    def get_workflow(self):
+        return self.project.get_workflow()
 
 class Schema(object):
     def __init__(self, schema_dict):
@@ -523,6 +525,14 @@ class Pipeline(object):
         for proc in self.processes:
             if proc['process'] == process:
                 return proc
+
+    def get_all_processes_names(self):
+        process_names_list = []
+
+        for process in self.process:
+            process_names_list.append(process)
+
+        return process_names_list
 
     def get_pipeline(self):
 
@@ -713,6 +723,9 @@ class SObject(object):
             result = server_start().execute_python_script('', kwargs=code)
 
             return result['info']['spt_ret_val']
+
+    def get_pipeline_code(self):
+        return self.info.get('pipeline_code')
 
 
 class Process(object):
@@ -1323,15 +1336,16 @@ def save_confirm(item_widget, paths, repo, context, update_versionless=True, des
         return None
 
 
-def get_dirs_with_naming(search_key):
+def get_dirs_with_naming(search_key, process_list=None):
     kwargs = {
-        'search_key': search_key
+        'search_key': search_key,
+        'process_list': process_list
     }
     code = tq.prepare_serverside_script(tq.get_dirs_with_naming, kwargs, return_dict=True)
     project_code = split_search_key(search_key)
     result = server_start(project=project_code['project_code']).execute_python_script('', kwargs=code)
 
-    return result['info']['spt_ret_val']
+    return json.loads(result['info']['spt_ret_val'])
 
 
 def checkin_virtual_snapshot(search_key, context, files_dict, snapshot_type='file', is_revision=False,

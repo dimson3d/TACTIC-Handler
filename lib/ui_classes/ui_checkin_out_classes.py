@@ -828,7 +828,7 @@ class Ui_checkInOutWidget(QtGui.QMainWindow):
         open_folder = QtGui.QAction('Show folder', self)
         open_folder.setIcon(gf.get_icon('folder-open'))
 
-        open_folder.triggered.connect(self.open_file)
+        open_folder.triggered.connect(self.open_folder)
 
         save_selected_snapshot = QtGui.QAction('Save selected objects', self)
         save_selected_snapshot.triggered.connect(lambda: self.save_file(selected_objects=[True]))
@@ -862,6 +862,9 @@ class Ui_checkInOutWidget(QtGui.QMainWindow):
 
             save_snapshot_additional = menu.addAction(save_snapshot, True)
             save_snapshot_additional.clicked.connect(self.save_file_options)
+
+            menu.addAction(open_folder)
+
             if env_mode.get_mode() == 'maya':
                 save_selected_snapshot_additional = menu.addAction(save_selected_snapshot, True)
                 save_selected_snapshot_additional.clicked.connect(self.export_selected_file_options)
@@ -896,6 +899,7 @@ class Ui_checkInOutWidget(QtGui.QMainWindow):
                 else:
                     open_snapshot_additional = menu.addAction(open_snapshot, True)
                     open_snapshot_additional.clicked.connect(self.open_file_options)
+                    menu.addAction(open_folder)
 
                 menu.addSeparator()
 
@@ -925,10 +929,14 @@ class Ui_checkInOutWidget(QtGui.QMainWindow):
                 menu.addAction(edit_info)
                 menu.addSeparator()
                 menu.addAction(delete_snapshot)
+            else:
+                menu.addAction(open_folder)
 
         if mode == 'process':
             save_snapshot_additional = menu.addAction(save_snapshot, True)
             save_snapshot_additional.clicked.connect(self.save_file_options)
+
+            menu.addAction(open_folder, True)
             if env_mode.get_mode() == 'maya':
                 save_selected_snapshot_additional = menu.addAction(save_selected_snapshot, True)
                 save_selected_snapshot_additional.clicked.connect(self.export_selected_file_options)
@@ -1148,13 +1156,9 @@ class Ui_checkInOutWidget(QtGui.QMainWindow):
 
     @gf.catch_error
     def open_file(self):
-        print 'getting paths'
-        file_path, dir_path, all_process = self.get_current_item_paths()
-
-        print 'opening'
 
         if env_mode.get_mode() == 'maya':
-            print 'opening maya'
+            file_path, dir_path, all_process = self.get_current_item_paths()
             mf.open_scene(file_path, dir_path, all_process)
         else:
             print 'opening standalone'
@@ -1166,7 +1170,25 @@ class Ui_checkInOutWidget(QtGui.QMainWindow):
                     fl[0].open_file()
                     break
 
-            # gf.open_file_associated(file_path)
+    @gf.catch_error
+    def open_folder(self):
+        print 'getting paths'
+
+        print 'opening'
+
+        current_widget = self.get_current_tree_widget()
+        current_tree_widget_item = current_widget.get_current_tree_widget_item()
+        item_type = current_tree_widget_item.get_type()
+
+        if item_type == 'sobject':
+            print 'Opening sobject Folder'
+        elif item_type == 'process':
+            print 'Opening process Folder'
+            sobject = current_tree_widget_item.get_sobject()
+            paths = tc.get_dirs_with_naming(sobject.get_search_key(), [current_tree_widget_item.process])
+            print paths
+        elif item_type == 'snapshot':
+            print 'Opening snapshot Folder'
 
     def import_file(self):
         file_path = self.get_current_item_paths()[0]
@@ -1596,7 +1618,7 @@ class Ui_checkInOutWidget(QtGui.QMainWindow):
         current_tree_widget_item = current_widget.get_current_tree_widget_item()
 
         if current_tree_widget_item:
-            menu = self.checkin_context_menu(False, mode=current_tree_widget_item.type)
+            menu = self.checkin_context_menu(False, mode=current_tree_widget_item.get_type())
             if menu:
                 menu.exec_(Qt4Gui.QCursor.pos())
 
@@ -1606,7 +1628,7 @@ class Ui_checkInOutWidget(QtGui.QMainWindow):
 
         if current_tree_widget_item:
             self.fast_controls_tool_bar_widget.set_save_button_menu(
-                self.checkin_context_menu(True, mode=current_tree_widget_item.type))
+                self.checkin_context_menu(True, mode=current_tree_widget_item.get_type()))
 
     def set_settings_from_dict(self, settings_dict=None, apply_checkin_options=True, apply_search_options=True):
         self.do_creating_ui()

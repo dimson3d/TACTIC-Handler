@@ -4,7 +4,7 @@
 
 from lib.side.Qt import QtWidgets as QtGui
 from lib.side.Qt import QtCore
-from lib.environment import env_inst, env_mode, env_server
+from lib.environment import env_inst, env_mode, env_read_config, env_write_config
 import lib.maya_functions as mf
 import lib.tactic_classes as tc
 import lib.global_functions as gf
@@ -17,18 +17,13 @@ reload(ui_main_classes)
 class Ui_DockMain(MayaQWidgetDockableMixin, QtGui.QMainWindow):
     def __init__(self, hotkeys=None, parent=None):
         super(self.__class__, self).__init__(parent=parent)
+
         env_inst.ui_maya_dock = self
+
         self.setObjectName('TacticHandlerDock')
         self.maya_window = self.parent()
 
         self.hotkeys_dict = hotkeys
-
-        self.settings = QtCore.QSettings('{0}/settings/{1}/{2}/{3}/main_ui_config.ini'.format(
-            env_mode.get_current_path(),
-            env_mode.get_node(),
-            env_server.get_cur_srv_preset(),
-            env_mode.get_mode()),
-            QtCore.QSettings.IniFormat)
 
         self.docked = None
         self.dock_pos = None
@@ -65,10 +60,6 @@ class Ui_DockMain(MayaQWidgetDockableMixin, QtGui.QMainWindow):
 
     def create_ui_main(self):
         env_inst.ui_main = ui_main_classes.Ui_Main()
-        # env_inst.ui_main.show()
-        # asz = QtGui.QPushButton('AASD')
-        # self.setCentralWidget(asz)
-        # print env_inst.ui_main.parent()
         self.setCentralWidget(env_inst.ui_main)
         self.setWindowTitle(env_inst.ui_main.windowTitle())
         self.move(self.dock_pos)
@@ -97,8 +88,8 @@ class Ui_DockMain(MayaQWidgetDockableMixin, QtGui.QMainWindow):
             self.hotkeys_dict = None
 
     def set_docked(self):
-        if self.status_bar:
-            self.status_bar.hide()
+        # if self.status_bar:
+        #     self.status_bar.hide()
 
         self.toggle_dock = True
         self.setDockableParameters(
@@ -134,40 +125,60 @@ class Ui_DockMain(MayaQWidgetDockableMixin, QtGui.QMainWindow):
         self.status_bar = env_inst.ui_main.statusBar()
         self.status_bar.show()
 
-    def readSettings(self):
-        """
-        Reading Settings
-        """
-        self.settings.beginGroup('ui_maya_dock')
-        self.docked = bool(int(self.settings.value('docked', 1)))
-        self.dock_pos = self.settings.value('dock_pos', QtCore.QPoint(200, 200))
-        if self.docked:
-            self.move(self.dock_pos)
-        self.dock_is_floating = bool(int(self.settings.value('dock_isFloating', 0)))
-        self.dock_size = self.settings.value('dock_size', QtCore.QSize(427, 690))
-        if int(self.settings.value('dock_tabArea', 1)) == 2:
+    def set_settings_from_dict(self, settings_dict=None):
+
+        if not settings_dict:
+            settings_dict = {
+                'docked': 0,
+                'dock_pos': (200, 200),
+                'dock_size': (427, 690),
+                'dock_isFloating': 0,
+                'dock_tabArea': 1,
+            }
+
+        self.docked = bool(int(settings_dict['docked']))
+
+        self.dock_pos = gf.tuple_to_qsize(settings_dict['dock_pos'], 'pos')
+        self.dock_size = gf.tuple_to_qsize(settings_dict['dock_size'], 'size')
+
+        # if self.docked:
+        #     self.move(self.dock_pos)
+
+        self.dock_is_floating = bool(int(settings_dict['dock_isFloating']))
+
+        if int(settings_dict['dock_tabArea']) == 2:
             self.dock_area = 'right'
         else:
             self.dock_area = 'left'
 
-        self.settings.endGroup()
+    def get_settings_dict(self):
+        settings_dict = {
+            'docked': int(self.docked),
+        }
+        if self.docked:
+            settings_dict['dock_pos'] = gf.qsize_to_tuple(self.maya_dock.pos())
+            settings_dict['dock_size'] = gf.qsize_to_tuple(self.maya_dock.size())
+            settings_dict['dock_isFloating'] = int(bool(self.isFloating()))
+            settings_dict['dock_tabArea'] = int(self.maya_window.dockWidgetArea(self.maya_dock))
+        else:
+            settings_dict['dock_pos'] = gf.qsize_to_tuple(self.pos())
+            settings_dict['dock_size'] = gf.qsize_to_tuple(self.size())
+            settings_dict['dock_isFloating'] = 0
+            settings_dict['dock_tabArea'] = 1
+
+        return settings_dict
+
+    def readSettings(self):
+
+        self.set_settings_from_dict(
+            env_read_config(filename='ui_maya_settings', unique_id='ui_main', long_abs_path=True)
+        )
 
     def writeSettings(self):
-        """
-        Writing Settings
-        """
-        self.settings.beginGroup('ui_maya_dock')
-        if self.docked:
-            self.settings.setValue('dock_pos', self.maya_dock.pos())
-            self.settings.setValue('dock_size', self.maya_dock.size())
-            self.settings.setValue('dock_isFloating', int(bool(self.isFloating())))
-            self.settings.setValue('dock_tabArea', int(self.maya_window.dockWidgetArea(self.maya_dock)))
-        else:
-            self.settings.setValue('dock_pos', self.pos())
-            self.settings.setValue('dock_size', self.size())
-        self.settings.setValue('docked', int(self.docked))
+
+        env_write_config(self.get_settings_dict(), filename='ui_maya_settings', unique_id='ui_main', long_abs_path=True)
+
         print('Done ui_maya_dock settings write')
-        self.settings.endGroup()
 
     def catch_maya_closing(self):
         QtGui.QApplication.instance().aboutToQuit.connect(env_inst.ui_main.close)

@@ -114,6 +114,9 @@ class Ui_itemWidget(QtGui.QWidget, ui_item.Ui_item):
         if self.sobject:
             self.fill_sobject_info()
 
+    def get_type(self):
+        return self.type
+
     def get_expand_state(self):
         return self.expand_state
 
@@ -735,6 +738,9 @@ class Ui_processItemWidget(QtGui.QWidget, ui_item_process.Ui_processItem):
 
         self.create_ui()
 
+    def get_type(self):
+        return self.type
+
     def get_expand_state(self):
         return self.expand_state
 
@@ -1163,6 +1169,9 @@ class Ui_snapshotItemWidget(QtGui.QWidget, ui_item_snapshot.Ui_snapshotItem):
             self.files = snapshot[0].files
 
         self.create_ui()
+
+    def get_type(self):
+        return self.type
 
     def create_ui(self):
         # self.drop_wdg = QtGui.QWidget(self)
@@ -1701,6 +1710,9 @@ class Ui_childrenItemWidget(QtGui.QWidget, ui_item_children.Ui_childrenItem):
         self.controls_actions()
 
         self.create_ui()
+
+    def get_type(self):
+        return self.type
 
     def create_ui(self):
         # self.drop_wdg = QtGui.QWidget(self)

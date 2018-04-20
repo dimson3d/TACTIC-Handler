@@ -88,8 +88,6 @@ class Ui_addTacticSobjectWidget(QtGui.QDialog):
             result_dict['EditWdg']['sobject'] = self.item.get_sobject()
             result_dict['EditWdg']['parent_sobject'] = self.item.get_parent_sobject()
 
-        # print result_dict
-
         tactic_edit_widget = tw.TacticEditWdg(result_dict['EditWdg'])
         tactic_edit_widget.set_stype(self.stype)
 
@@ -123,7 +121,6 @@ class Ui_addTacticSobjectWidget(QtGui.QDialog):
 
         self.edit_window.create_ui()
         self.readSettings()
-        # self.edit_window.set_settings_from_dict(self.settings.value('edit_widndow_settings_dict', None))
 
     def create_loading_label(self):
         self.loading_label = QtGui.QLabel()

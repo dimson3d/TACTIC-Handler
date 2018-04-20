@@ -91,17 +91,44 @@ class QtTacticEditWidget(QtGui.QWidget):
             self.sobject = sobject_class
 
         if self.stype.pipeline:
-            paths = tc.get_dirs_with_naming(self.sobject.get_search_key())
+            current_pipeline = self.stype.pipeline.get(self.sobject.get_pipeline_code())
+            workflow = self.stype.get_workflow()
+            processes_list = current_pipeline.get_all_processes_names()
+            sub_processes_list = []
+
+            # getting sub-processes from workflow
+            for process, process_info in current_pipeline.process.items():
+                if process_info.get('type') == 'hierarchy':
+                    child_pipeline = workflow.get_child_pipeline_by_process_code(
+                        current_pipeline,
+                        process
+                    )
+                    sub_processes_list.extend(child_pipeline.get_all_processes_names())
+
+            if sub_processes_list:
+                processes_list.extend(sub_processes_list)
+
+            paths = tc.get_dirs_with_naming(self.sobject.get_search_key(), processes_list)
+
+            all_paths = []
+
+            if paths:
+                print(paths['versions'])
+                if paths['versionless']:
+                    all_paths.extend(paths['versionless'])
+                if paths['versions']:
+                    all_paths.extend(paths['versions'])
+
             if not repo:
                 base_dirs = env_tactic.get_all_base_dirs()
                 for key, val in base_dirs:
                     if val['value'][4]:
-                        for path in paths:
+                        for path in all_paths:
                             abs_path = val['value'][0] + '/' + path
                             if not os.path.exists(gf.form_path(abs_path)):
                                 os.makedirs(gf.form_path(abs_path))
             else:
-                for path in paths:
+                for path in all_paths:
                     abs_path = repo['value'][0] + '/' + path
                     if not os.path.exists(gf.form_path(abs_path)):
                         os.makedirs(gf.form_path(abs_path))

@@ -247,13 +247,12 @@ class Ui_snapshotBrowserWidget(QtGui.QWidget, ui_snapshot_browser.Ui_snapshotBro
             self.filesTreeWidget.setHeaderHidden(False)
             self.filesTreeWidget.setColumnCount(5)
         icon_provider = QtGui.QFileIconProvider()
-
         if self.snapshots:
 
             if self.item_widget.type == 'snapshot':
                 if self.item_widget.is_versionless():
                     versionless_snapshot = self.item_widget.get_snapshot()
-                    if versionless_snapshot not in self.snapshots:
+                    if versionless_snapshot and versionless_snapshot not in self.snapshots:
                         self.snapshots.append(versionless_snapshot)
 
             for snapshot in self.snapshots:

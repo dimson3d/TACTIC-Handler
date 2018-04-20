@@ -310,25 +310,47 @@ def query_search_types_extended(project_code, namespace):
     return json.dumps(result, separators=(',', ':'))
 
 
-def get_dirs_with_naming(search_key=None):
+def get_dirs_with_naming(search_key=None, process_list=None):
+    import json
     from pyasm.biz import Snapshot
     from pyasm.biz import Project
     from pyasm.search import SearchType
-    sobjects = server.server._get_sobjects(search_key)
-    sobject = sobjects[0]
-    file_object = SearchType.create('sthpw/file')
-    from pyasm.biz import Pipeline
-    pipelines = Pipeline.get_by_search_type(sobject.get_base_search_type())
-    processes = pipelines[0].get_process_names()
+
     dir_naming = Project.get_dir_naming()
-    dir_naming.set_sobject(sobject)
-    dir_naming.set_file_object(file_object)
-    dirs_list = []
+
+    dirs_dict = {
+        'versions': [],
+        'versionless': [],
+    }
+
+    if process_list:
+        processes = process_list
+    else:
+        from pyasm.biz import Pipeline
+        sobjects = server.server._get_sobjects(search_key)
+        sobject = sobjects[0]
+        pipelines = Pipeline.get_by_search_type(sobject.get_base_search_type())
+        processes = pipelines[0].get_process_names()
+
+    search_type, search_code = server.split_search_key(search_key)
+    search_type = search_type.split('?')[0]
+
     for process in processes:
-        snapshot = Snapshot.create(sobject, snapshot_type='file', context=process, commit=False, version=-1)
+        # querying sobjects every time because we need to refresh naming
+        sobject = server.query(search_type, filters=[('code', search_code)], return_sobjects=True, single=True)
+        dir_naming.set_sobject(sobject)
+        file_object = SearchType.create('sthpw/file')
+        dir_naming.set_file_object(file_object)
+        snapshot = Snapshot.create(sobject, snapshot_type='file', context=process, commit=False)
         dir_naming.set_snapshot(snapshot)
-        dirs_list.append(dir_naming.get_dir('relative'))
-    return dirs_list
+        dirs_dict['versions'].append(dir_naming.get_dir('relative'))
+
+        snapshot_versionless = Snapshot.create(sobject, snapshot_type='file', context=process, process=process,
+                                               commit=False, version=-1)
+        dir_naming.set_snapshot(snapshot_versionless)
+        dirs_dict['versionless'].append(dir_naming.get_dir('relative'))
+
+    return json.dumps(dirs_dict, separators=(',', ':'))
 
 
 def get_virtual_snapshot_extended(search_key, context, files_dict, snapshot_type="file", is_revision=False, level_key=None, keep_file_name=False, version=None, update_versionless=True, ignore_keep_file_name=False, checkin_type='file'):

@@ -1,7 +1,7 @@
 # main_maya.py
 # Start here
 
-CURRENT_PATH = 'D:/APS/mega/Work/CGProjects/tacticbase_dev/TACTIC-Handler'
+CURRENT_PATH = '/home/krivospickiy_a/MEGA/Work/CGProjects/tacticbase_dev/TACTIC-handler'
 
 import sys
 if CURRENT_PATH not in sys.path:

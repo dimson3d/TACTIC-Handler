@@ -2,14 +2,14 @@
 
 # Form implementation generated from reading ui file 'conf/ui_checkinOutPage.ui'
 #
-# Created: Thu Apr 27 14:15:16 2017
-#      by: pyside-uic 0.2.13 running on PySide 1.2.2
+# Created: Mon May  7 15:40:19 2018
+#      by: pyside-uic 0.2.15 running on PySide 1.2.2
 #
 # WARNING! All changes made in this file will be lost!
 
 from lib.side.Qt import QtWidgets as QtGui
+from lib.side.Qt import QtGui as Qt4Gui
 from lib.side.Qt import QtCore
-
 
 class Ui_checkinOutPageWidget(object):
     def setupUi(self, checkinOutPageWidget):
@@ -19,12 +19,16 @@ class Ui_checkinOutPageWidget(object):
         self.checkinOutPageWidgetLayout.setVerticalSpacing(0)
         self.checkinOutPageWidgetLayout.setObjectName("checkinOutPageWidgetLayout")
         self.processTabsFilterGroupBox = QtGui.QGroupBox(checkinOutPageWidget)
+        font = Qt4Gui.QFont()
+        font.setWeight(75)
+        font.setBold(True)
+        self.processTabsFilterGroupBox.setFont(font)
         self.processTabsFilterGroupBox.setFlat(True)
         self.processTabsFilterGroupBox.setCheckable(True)
         self.processTabsFilterGroupBox.setChecked(False)
         self.processTabsFilterGroupBox.setObjectName("processTabsFilterGroupBox")
         self.processTabsFilterLayout = QtGui.QVBoxLayout(self.processTabsFilterGroupBox)
-        self.processTabsFilterLayout.setContentsMargins(9, -1, 0, 0)
+        self.processTabsFilterLayout.setContentsMargins(10, 24, 9, 0)
         self.processTabsFilterLayout.setObjectName("processTabsFilterLayout")
         self.processTreeWidget = QtGui.QTreeWidget(self.processTabsFilterGroupBox)
         self.processTreeWidget.setStyleSheet("QTreeView::item {\n"
@@ -38,12 +42,16 @@ class Ui_checkinOutPageWidget(object):
         self.processTabsFilterLayout.addWidget(self.processTreeWidget)
         self.checkinOutPageWidgetLayout.addWidget(self.processTabsFilterGroupBox, 1, 1, 1, 1)
         self.controlsTabsFilterGroupBox = QtGui.QGroupBox(checkinOutPageWidget)
+        font = Qt4Gui.QFont()
+        font.setWeight(75)
+        font.setBold(True)
+        self.controlsTabsFilterGroupBox.setFont(font)
         self.controlsTabsFilterGroupBox.setFlat(True)
         self.controlsTabsFilterGroupBox.setCheckable(True)
         self.controlsTabsFilterGroupBox.setChecked(False)
         self.controlsTabsFilterGroupBox.setObjectName("controlsTabsFilterGroupBox")
         self.controlsTabsFilterLayout = QtGui.QGridLayout(self.controlsTabsFilterGroupBox)
-        self.controlsTabsFilterLayout.setContentsMargins(9, -1, 0, -1)
+        self.controlsTabsFilterLayout.setContentsMargins(10, 24, 9, 0)
         self.controlsTabsFilterLayout.setObjectName("controlsTabsFilterLayout")
         self.controlsTabsTreeWidget = QtGui.QTreeWidget(self.controlsTabsFilterGroupBox)
         self.controlsTabsTreeWidget.setMaximumSize(QtCore.QSize(16777215, 160))

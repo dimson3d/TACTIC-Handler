@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file './ui_main_tabs.ui'
 #
-# Created: Mon May 29 16:20:01 2017
-#      by: pyside-uic 0.2.13 running on PySide 1.2.2
+# Created: Mon May  7 17:03:09 2018
+#      by: pyside-uic 0.2.15 running on PySide 1.2.2
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -26,20 +26,23 @@ class Ui_mainTabsForm(object):
 "}\n"
 "\n"
 "#main_tabWidget > QTabBar::tab {\n"
-"    background: qlineargradient(x1: 0, y1: 0, x2: 1, y2: 0, stop: 0 rgba(175, 175, 175, 16), stop: 1 rgba(175, 175, 175, 0));\n"
-"    border: 0px solid transparent;\n"
-"    border-top-left-radius: 2px;\n"
-"    border-top-right-radius: 2px;\n"
+"    background: transparent;\n"
+"    border: 2px solid transparent;\n"
+"    border-top-left-radius: 3px;\n"
+"    border-bottom-left-radius: 3px;\n"
+"    border-top-right-radius: 0px;\n"
+"    border-bottom-right-radius: 0px;\n"
 "    padding: 4px;\n"
 "}\n"
 "#main_tabWidget > QTabBar::tab:selected, #main_tabWidget > QTabBar::tab:hover {\n"
-"    background: qlineargradient(x1: 0, y1: 0, x2: 1, y2: 0, stop: 0 rgba(255, 255, 255, 64), stop: 1 rgba(255, 255, 255, 8));\n"
+"    background: qlineargradient(x1: 0, y1: 0, x2: 1, y2: 0, stop: 0 rgba(255, 255, 255, 48), stop: 1 rgba(255, 255, 255, 32));\n"
 "}\n"
+"\n"
 "#main_tabWidget > QTabBar::tab:selected {\n"
 "    border-color: transparent;\n"
 "}\n"
 "#main_tabWidget > QTabBar::tab:!selected {\n"
-"    margin-left: 2px;\n"
+"    margin-top: 0px;\n"
 "}")
         self.main_tabWidget.setTabPosition(QtGui.QTabWidget.West)
         self.main_tabWidget.setObjectName("main_tabWidget")

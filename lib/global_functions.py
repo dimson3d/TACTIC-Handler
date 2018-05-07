@@ -15,12 +15,109 @@ import re
 import traceback
 import side.qtawesome as qta
 import side.natsort as natsort
-from lib.side.bs4 import BeautifulSoup
+from bs4 import BeautifulSoup
 from lib.side.Qt import QtWidgets as QtGui
 from lib.side.Qt import QtGui as Qt4Gui
 from lib.side.Qt import QtCore
+from lib.side.watchdog.observers import Observer
+from lib.side.watchdog.events import FileSystemEventHandler, EVENT_TYPE_MOVED, EVENT_TYPE_CREATED, EVENT_TYPE_DELETED, EVENT_TYPE_MODIFIED
 
-from environment import env_mode, env_tactic, env_inst
+from environment import env_mode, env_tactic, env_inst, dl
+
+
+class EventHandler(FileSystemEventHandler, QtCore.QObject):
+    created = QtCore.Signal(object, object)
+    deleted = QtCore.Signal(object, object)
+    moved = QtCore.Signal(object, object)
+    modified = QtCore.Signal(object, object)
+    any = QtCore.Signal(object, object)
+
+    def __init__(self):
+        super(EventHandler, self).__init__()
+
+    def dispatch(self, event, watch):
+        self.on_any_event(event, watch)
+        _method_map = {
+            EVENT_TYPE_MODIFIED: self.on_modified,
+            EVENT_TYPE_MOVED: self.on_moved,
+            EVENT_TYPE_CREATED: self.on_created,
+            EVENT_TYPE_DELETED: self.on_deleted,
+        }
+        event_type = event.event_type
+        _method_map[event_type](event, watch)
+
+    def on_any_event(self, event, watch):
+        self.any.emit(event, watch)
+
+    def on_created(self, event, watch):
+        self.created.emit(event, watch)
+
+    def on_deleted(self, event, watch):
+        self.deleted.emit(event, watch)
+
+    def on_moved(self, event, watch):
+        self.moved.emit(event, watch)
+
+    def on_modified(self, event, watch):
+        self.modified.emit(event, watch)
+
+
+class FSObserver(Observer):
+
+    def __init__(self):
+        super(FSObserver, self).__init__()
+
+        self.event_handler = EventHandler()
+        self.started = False
+
+        self.observers_dict = {}
+
+    def set_created_signal(self, func):
+        self.event_handler.created.connect(func)
+
+    def append_watch(self, watch_name, paths=None, repos=None, recursive=None):
+
+        if watch_name not in self.observers_dict.keys():
+
+            for i, path in enumerate(paths):
+                watch = self.schedule(self.event_handler, path=path, recursive=recursive)
+                watch.watch_name = watch_name
+                watch.repo = repos[i]
+                self.observers_dict.setdefault(watch_name, []).append(watch)
+                dl.info(u'Enabled Watching path: {0}'.format(path),
+                        group_id='watch_folders_ui')
+
+    def remove_watch(self, watch_name):
+
+        if watch_name in self.observers_dict.keys():
+            for observer in self.observers_dict.pop(watch_name):
+                self.unschedule(observer)
+                dl.info(u'Disabling Watch: {0}'.format(observer.path),
+                        group_id='watch_folders_ui')
+
+    def stop(self):
+        self.started = False
+        super(FSObserver, self).stop()
+
+    def is_started(self):
+        return self.started
+
+    def start(self):
+        self.started = True
+        super(FSObserver, self).start()
+
+    def dispatch_events(self, event_queue, timeout):
+        # OVERRIDEN, to see which watch handles event
+        event, watch = event_queue.get(block=True, timeout=timeout)
+
+        with self._lock:
+            # To allow unschedule/stop and safe removal of event handlers
+            # within event handlers itself, check if the handler is still
+            # registered after every dispatch.
+            for handler in list(self._handlers.get(watch, [])):
+                if handler in self._handlers.get(watch, []):
+                    handler.dispatch(event, watch)
+        event_queue.task_done()
 
 
 class ThreadSignals(QtCore.QObject):
@@ -148,6 +245,11 @@ class ThreadWorker(QtCore.QRunnable):
                 'exception': expected,
                 'stacktrace': stacktrace,
             }
+
+            dl.exception(stacktrace, group_id='{0}/{1}'.format(
+                'threaded_exceptions',
+                self.agent.func_name, ))
+
             self.set_failed(True)
             self.emit_error((exception, self))
         else:
@@ -161,7 +263,7 @@ class ThreadWorker(QtCore.QRunnable):
 def get_thread_worker(agent_func, thread_pool=None, result_func=None, error_func=None,
                       finished_func=None, progress_func=None, stop_func=None, parent=None):
     """
-    This will create worker with thread poll for you, or you can add worker to you existing thread
+    This will create worker with thread pool for you, or you can add worker to your existing thread
 
     :param agent_func: This will be run, cannot be lambda.
     :param thread_pool: If no passed, will creates global instance, which can be accessed from worker.
@@ -198,6 +300,10 @@ def catch_error(func):
                 'exception': expected,
                 'stacktrace': stacktrace,
             }
+
+            dl.exception(stacktrace, group_id='{0}/{1}'.format(
+                'exceptions',
+                func.func_name,))
 
             error_handle((exception, None))
 
@@ -1155,6 +1261,25 @@ def add_child_item(tree_widget, parent_widget, sobject, stype, child, item_info)
 #                                 tree_widget.scrollToItem(child_item)
 #
 
+def recursive_close_tree_item_widgets(wdg):
+    if type(wdg) == QtGui.QTreeWidget:
+        items_count = wdg.topLevelItemCount()
+        tree_item = wdg.topLevelItem
+        tree_wdg = wdg
+    else:
+        items_count = wdg.childCount()
+        tree_item = wdg.child
+        tree_wdg = wdg.treeWidget()
+
+    for i in range(items_count):
+        item = tree_item(i)
+        item_wdg = tree_wdg.itemWidget(item, 0)
+        item_wdg.close()
+
+        if item.childCount() > 0:
+            recursive_close_tree_item_widgets(item)
+
+
 def tree_recursive_expand(wdg, state):
     """ Expanding tree to the ground"""
 
@@ -1333,10 +1458,10 @@ def open_folder(filepath):
             os.startfile(filepath)
 
 
-def form_path(path):
-    if env_mode.get_platform() == 'Linux':
+def form_path(path, tp=None):
+    if env_mode.get_platform() == 'Linux' or tp == 'linux':
         formed_path = path.replace('\\', '/').replace('\\\\', '/').replace('//', '/')
-    elif env_mode.get_platform() == 'Windows':
+    elif env_mode.get_platform() == 'Windows' or tp == 'win':
         formed_path = path.replace('/', '\\')
     else:
         formed_path = path.replace('\\', '/')

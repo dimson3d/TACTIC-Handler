@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>862</width>
-    <height>665</height>
+    <width>1195</width>
+    <height>933</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -20,6 +20,21 @@
       <enum>Qt::Horizontal</enum>
      </property>
      <widget class="QTreeWidget" name="treeWidget">
+      <property name="maximumSize">
+       <size>
+        <width>320</width>
+        <height>16777215</height>
+       </size>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">QTreeView::item {padding: 2px;}</string>
+      </property>
+      <property name="alternatingRowColors">
+       <bool>true</bool>
+      </property>
+      <property name="verticalScrollMode">
+       <enum>QAbstractItemView::ScrollPerPixel</enum>
+      </property>
       <attribute name="headerVisible">
        <bool>false</bool>
       </attribute>
@@ -35,44 +50,44 @@
    <item row="1" column="0">
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
-      <widget class="QCheckBox" name="checkBox_4">
-       <property name="text">
-        <string>Info</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QCheckBox" name="checkBox_3">
-       <property name="text">
-        <string>Warning</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QCheckBox" name="checkBox_2">
-       <property name="text">
-        <string>Error</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QCheckBox" name="checkBox">
-       <property name="text">
-        <string>Critical</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QCheckBox" name="checkBox_5">
+      <widget class="QCheckBox" name="logCheckBox">
        <property name="text">
         <string>Log</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QCheckBox" name="checkBox_6">
+      <widget class="QCheckBox" name="infoCheckBox">
+       <property name="text">
+        <string>Info</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="warningCheckBox">
+       <property name="text">
+        <string>Warning</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="exceptionCheckBox">
        <property name="text">
         <string>Exception</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="errorCheckBox">
+       <property name="text">
+        <string>Error</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="criticalCheckBox">
+       <property name="text">
+        <string>Critical</string>
        </property>
       </widget>
      </item>

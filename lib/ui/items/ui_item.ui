@@ -118,9 +118,6 @@
        <property name="autoRaise">
         <bool>true</bool>
        </property>
-       <property name="arrowType">
-        <enum>Qt::NoArrow</enum>
-       </property>
       </widget>
      </item>
      <item>
@@ -222,6 +219,25 @@
          <width>30</width>
          <height>0</height>
         </size>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QToolButton" name="watchFolderToolButton">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+       <property name="checkable">
+        <bool>true</bool>
+       </property>
+       <property name="autoRaise">
+        <bool>true</bool>
        </property>
       </widget>
      </item>

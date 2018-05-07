@@ -424,11 +424,17 @@ class Ui_searchResultsWidget(QtGui.QWidget):
 
     def create_results_tab_widget(self):
         self.resultsTabWidget = QtGui.QTabWidget()
-        self.resultsTabWidget.setStyleSheet("QTabWidget::pane { border: 0px;}"
-                                            "QTabWidget::tab-bar {alignment: left;}")
         self.resultsTabWidget.setMovable(True)
         self.resultsTabWidget.setTabsClosable(True)
         self.resultsTabWidget.setObjectName("resultsTabWidget")
+
+        self.resultsTabWidget.setStyleSheet(
+            '#resultsTabWidget > QTabBar::tab {background: transparent;border: 2px solid transparent;'
+            'border-top-left-radius: 3px;border-top-right-radius: 3px;border-bottom-left-radius: 0px;border-bottom-right-radius: 0px;padding: 4px;}'
+            '#resultsTabWidget > QTabBar::tab:selected, #resultsTabWidget > QTabBar::tab:hover {'
+            'background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 rgba(255, 255, 255, 48), stop: 1 rgba(255, 255, 255, 32));}'
+            '#resultsTabWidget > QTabBar::tab:selected {border-color: transparent;}'
+            '#resultsTabWidget > QTabBar::tab:!selected {margin-top: 0px;}')
 
     def create_ui_search_results(self):
 
@@ -607,6 +613,8 @@ class Ui_searchResultsWidget(QtGui.QWidget):
         current_widget = self.get_current_widget()
         current_tree_widget = current_widget.resultsTreeWidget
 
+        gf.recursive_close_tree_item_widgets(current_tree_widget)
+
         current_tree_widget.clear()
 
         current_widget.progress_bar.setVisible(True)
@@ -680,10 +688,11 @@ class Ui_searchResultsWidget(QtGui.QWidget):
 
     def clear_tabs_history(self):
         for action in self.history_tab_button.actions():
-            print action.data()
-            if action.data():
-                action.data().close()
-                action.data().deleteLater()
+            results_wdg = action.data()
+            if results_wdg:
+                results_wdg.clear_tree_widgets()
+                results_wdg.close()
+                results_wdg.deleteLater()
             self.history_tab_button.removeAction(action)
 
         del self.clear_history
@@ -1433,6 +1442,18 @@ class Ui_resultsFormWidget(QtGui.QWidget, ui_search_results_tree.Ui_resultsForm)
                     snapshots,
                     item_widget.info,
                 )
+
+    def clear_versionless_tree_widget(self):
+        gf.recursive_close_tree_item_widgets(self.resultsTreeWidget)
+        self.resultsTreeWidget.clear()
+
+    def clear_versions_tree_widget(self):
+        gf.recursive_close_tree_item_widgets(self.resultsVersionsTreeWidget)
+        self.resultsVersionsTreeWidget.clear()
+
+    def clear_tree_widgets(self):
+        self.clear_versionless_tree_widget()
+        self.clear_versions_tree_widget()
 
     def browse_snapshot(self, item):
 

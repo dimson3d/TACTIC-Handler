@@ -1,26 +1,33 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'conf\ui_checkinPage.ui'
+# Form implementation generated from reading ui file 'conf/ui_checkinPage.ui'
 #
-# Created: Sat Dec 23 23:51:24 2017
-#      by: pyside-uic 0.2.15 running on PySide 1.2.4
+# Created: Mon May  7 15:31:01 2018
+#      by: pyside-uic 0.2.15 running on PySide 1.2.2
 #
 # WARNING! All changes made in this file will be lost!
 
 from lib.side.Qt import QtWidgets as QtGui
+from lib.side.Qt import QtGui as Qt4Gui
 from lib.side.Qt import QtCore
+
 
 class Ui_checkinPageWidget(object):
     def setupUi(self, checkinPageWidget):
         checkinPageWidget.setObjectName("checkinPageWidget")
+        checkinPageWidget.resize(952, 1106)
         self.checkinPageWidgetLayout = QtGui.QVBoxLayout(checkinPageWidget)
         self.checkinPageWidgetLayout.setContentsMargins(0, 0, 0, 0)
         self.checkinPageWidgetLayout.setObjectName("checkinPageWidgetLayout")
         self.checkinMiscOptionsGroupBox = QtGui.QGroupBox(checkinPageWidget)
+        font = Qt4Gui.QFont()
+        font.setWeight(75)
+        font.setBold(True)
+        self.checkinMiscOptionsGroupBox.setFont(font)
         self.checkinMiscOptionsGroupBox.setFlat(True)
         self.checkinMiscOptionsGroupBox.setObjectName("checkinMiscOptionsGroupBox")
         self.checkinMiscOptionsLayout = QtGui.QGridLayout(self.checkinMiscOptionsGroupBox)
-        self.checkinMiscOptionsLayout.setContentsMargins(9, -1, 0, 0)
+        self.checkinMiscOptionsLayout.setContentsMargins(10, 24, -1, 0)
         self.checkinMiscOptionsLayout.setObjectName("checkinMiscOptionsLayout")
         self.versionsSeparateCheckinCheckBox = QtGui.QCheckBox(self.checkinMiscOptionsGroupBox)
         self.versionsSeparateCheckinCheckBox.setObjectName("versionsSeparateCheckinCheckBox")
@@ -52,10 +59,14 @@ class Ui_checkinPageWidget(object):
         self.checkinMiscOptionsLayout.setColumnStretch(0, 1)
         self.checkinPageWidgetLayout.addWidget(self.checkinMiscOptionsGroupBox)
         self.snapshotsSavingOptionsGroupBox = QtGui.QGroupBox(checkinPageWidget)
+        font = Qt4Gui.QFont()
+        font.setWeight(75)
+        font.setBold(True)
+        self.snapshotsSavingOptionsGroupBox.setFont(font)
         self.snapshotsSavingOptionsGroupBox.setFlat(True)
         self.snapshotsSavingOptionsGroupBox.setObjectName("snapshotsSavingOptionsGroupBox")
         self.snapshotsSavingOptionsLayout = QtGui.QGridLayout(self.snapshotsSavingOptionsGroupBox)
-        self.snapshotsSavingOptionsLayout.setContentsMargins(9, -1, 0, 0)
+        self.snapshotsSavingOptionsLayout.setContentsMargins(10, 24, -1, 0)
         self.snapshotsSavingOptionsLayout.setObjectName("snapshotsSavingOptionsLayout")
         self.checkinMethodLabel = QtGui.QLabel(self.snapshotsSavingOptionsGroupBox)
         self.checkinMethodLabel.setObjectName("checkinMethodLabel")
@@ -141,10 +152,14 @@ class Ui_checkinPageWidget(object):
         self.snapshotsSavingOptionsLayout.addWidget(self.createPlayblastCheckBox, 6, 0, 1, 1)
         self.checkinPageWidgetLayout.addWidget(self.snapshotsSavingOptionsGroupBox)
         self.dropPlateOptionsGroupBox = QtGui.QGroupBox(checkinPageWidget)
+        font = Qt4Gui.QFont()
+        font.setWeight(75)
+        font.setBold(True)
+        self.dropPlateOptionsGroupBox.setFont(font)
         self.dropPlateOptionsGroupBox.setFlat(True)
         self.dropPlateOptionsGroupBox.setObjectName("dropPlateOptionsGroupBox")
         self.dropPlateOptionsLayout = QtGui.QGridLayout(self.dropPlateOptionsGroupBox)
-        self.dropPlateOptionsLayout.setContentsMargins(-1, -1, 0, 0)
+        self.dropPlateOptionsLayout.setContentsMargins(10, 24, -1, 0)
         self.dropPlateOptionsLayout.setObjectName("dropPlateOptionsLayout")
         self.clearDropPlateAfterCheckincheckBox = QtGui.QCheckBox(self.dropPlateOptionsGroupBox)
         self.clearDropPlateAfterCheckincheckBox.setObjectName("clearDropPlateAfterCheckincheckBox")
@@ -154,10 +169,14 @@ class Ui_checkinPageWidget(object):
         self.dropPlateOptionsLayout.addWidget(self.uncheckFromDropPlateCheckBox, 0, 0, 1, 1)
         self.checkinPageWidgetLayout.addWidget(self.dropPlateOptionsGroupBox)
         self.defaultRepoPathsGroupBox = QtGui.QGroupBox(checkinPageWidget)
+        font = Qt4Gui.QFont()
+        font.setWeight(75)
+        font.setBold(True)
+        self.defaultRepoPathsGroupBox.setFont(font)
         self.defaultRepoPathsGroupBox.setFlat(True)
         self.defaultRepoPathsGroupBox.setObjectName("defaultRepoPathsGroupBox")
         self.defaultRepoPathsLayout = QtGui.QGridLayout(self.defaultRepoPathsGroupBox)
-        self.defaultRepoPathsLayout.setContentsMargins(9, 9, 0, 0)
+        self.defaultRepoPathsLayout.setContentsMargins(10, 24, -1, 0)
         self.defaultRepoPathsLayout.setObjectName("defaultRepoPathsLayout")
         self.assetBaseDirPathLineEdit = QtGui.QLineEdit(self.defaultRepoPathsGroupBox)
         self.assetBaseDirPathLineEdit.setObjectName("assetBaseDirPathLineEdit")
@@ -259,12 +278,16 @@ class Ui_checkinPageWidget(object):
         self.checkinPageWidgetLayout.addWidget(self.defaultRepoPathsGroupBox)
         self.customRepoPathsGroupBox = QtGui.QGroupBox(checkinPageWidget)
         self.customRepoPathsGroupBox.setEnabled(True)
+        font = Qt4Gui.QFont()
+        font.setWeight(75)
+        font.setBold(True)
+        self.customRepoPathsGroupBox.setFont(font)
         self.customRepoPathsGroupBox.setFlat(True)
         self.customRepoPathsGroupBox.setCheckable(True)
         self.customRepoPathsGroupBox.setChecked(False)
         self.customRepoPathsGroupBox.setObjectName("customRepoPathsGroupBox")
         self.customRepoPathsLayout = QtGui.QGridLayout(self.customRepoPathsGroupBox)
-        self.customRepoPathsLayout.setContentsMargins(9, -1, 0, -1)
+        self.customRepoPathsLayout.setContentsMargins(10, 24, -1, 0)
         self.customRepoPathsLayout.setObjectName("customRepoPathsLayout")
         self.label_7 = QtGui.QLabel(self.customRepoPathsGroupBox)
         self.label_7.setObjectName("label_7")

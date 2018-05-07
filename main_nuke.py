@@ -4,15 +4,21 @@
 import os
 import sys
 
-DATA_DIR = os.environ['TACTIC_DATA_DIR'] + '/TACTIC-handler'
-nuke.pluginAddPath(DATA_DIR)
+CURRENT_PATH = '/home/krivospickiy_a/MEGA/Work/CGProjects/tacticbase_dev/TACTIC-handler'
+
+import sys
+if CURRENT_PATH not in sys.path:
+    sys.path.append(CURRENT_PATH)
+# import lib.ui_classes.ui_maya_dock as main
+# reload(main)
+
+main.init_env(CURRENT_PATH)
+nuke.pluginAddPath(CURRENT_PATH)
 
 import PySide.QtGui as QtGui
 import PySide.QtCore as QtCore
 from nukescripts import panels
-import lib.environment as env
-env.STANDALONE = True
-import lib.ui_main_classes
+import lib.ui_classes.ui_main_classes as ui_main_classes
 
 
 class TacticDock(QtGui.QWidget):

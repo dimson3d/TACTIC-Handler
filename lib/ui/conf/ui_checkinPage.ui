@@ -2,12 +2,26 @@
 <ui version="4.0">
  <class>checkinPageWidget</class>
  <widget class="QWidget" name="checkinPageWidget">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>952</width>
+    <height>1106</height>
+   </rect>
+  </property>
   <layout class="QVBoxLayout" name="checkinPageWidgetLayout">
    <property name="margin">
     <number>0</number>
    </property>
    <item>
     <widget class="QGroupBox" name="checkinMiscOptionsGroupBox">
+     <property name="font">
+      <font>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
      <property name="title">
       <string>Search Results Options:</string>
      </property>
@@ -16,10 +30,10 @@
      </property>
      <layout class="QGridLayout" name="checkinMiscOptionsLayout" columnstretch="1,0,0">
       <property name="leftMargin">
-       <number>9</number>
+       <number>10</number>
       </property>
-      <property name="rightMargin">
-       <number>0</number>
+      <property name="topMargin">
+       <number>24</number>
       </property>
       <property name="bottomMargin">
        <number>0</number>
@@ -93,6 +107,12 @@
    </item>
    <item>
     <widget class="QGroupBox" name="snapshotsSavingOptionsGroupBox">
+     <property name="font">
+      <font>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
      <property name="title">
       <string>Snapshots Saving Options:</string>
      </property>
@@ -101,10 +121,10 @@
      </property>
      <layout class="QGridLayout" name="snapshotsSavingOptionsLayout" columnstretch="0,0,0,0">
       <property name="leftMargin">
-       <number>9</number>
+       <number>10</number>
       </property>
-      <property name="rightMargin">
-       <number>0</number>
+      <property name="topMargin">
+       <number>24</number>
       </property>
       <property name="bottomMargin">
        <number>0</number>
@@ -301,6 +321,12 @@
    </item>
    <item>
     <widget class="QGroupBox" name="dropPlateOptionsGroupBox">
+     <property name="font">
+      <font>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
      <property name="title">
       <string>Drop Plate Options:</string>
      </property>
@@ -308,8 +334,11 @@
       <bool>true</bool>
      </property>
      <layout class="QGridLayout" name="dropPlateOptionsLayout">
-      <property name="rightMargin">
-       <number>0</number>
+      <property name="leftMargin">
+       <number>10</number>
+      </property>
+      <property name="topMargin">
+       <number>24</number>
       </property>
       <property name="bottomMargin">
        <number>0</number>
@@ -333,6 +362,12 @@
    </item>
    <item>
     <widget class="QGroupBox" name="defaultRepoPathsGroupBox">
+     <property name="font">
+      <font>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
      <property name="title">
       <string>Repository Paths:</string>
      </property>
@@ -341,13 +376,10 @@
      </property>
      <layout class="QGridLayout" name="defaultRepoPathsLayout" columnstretch="0,0,0,1">
       <property name="leftMargin">
-       <number>9</number>
+       <number>10</number>
       </property>
       <property name="topMargin">
-       <number>9</number>
-      </property>
-      <property name="rightMargin">
-       <number>0</number>
+       <number>24</number>
       </property>
       <property name="bottomMargin">
        <number>0</number>
@@ -520,6 +552,12 @@ QToolButton:pressed {
      <property name="enabled">
       <bool>true</bool>
      </property>
+     <property name="font">
+      <font>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
      <property name="title">
       <string>Custom Repository Path:</string>
      </property>
@@ -534,9 +572,12 @@ QToolButton:pressed {
      </property>
      <layout class="QGridLayout" name="customRepoPathsLayout" columnstretch="0,0,0,0,0">
       <property name="leftMargin">
-       <number>9</number>
+       <number>10</number>
       </property>
-      <property name="rightMargin">
+      <property name="topMargin">
+       <number>24</number>
+      </property>
+      <property name="bottomMargin">
        <number>0</number>
       </property>
       <item row="0" column="0">

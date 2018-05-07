@@ -17,7 +17,7 @@ __all__ = ['CGApp']
 
 import types
 
-from lib.side.client.tactic_client_lib import TacticServerStub
+from client.tactic_client_lib import TacticServerStub
 
 
 class CGAppException(Exception):

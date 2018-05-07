@@ -21,10 +21,10 @@ import hashlib
 import warnings
 
 # Third party imports
-from lib.side.Qt.QtCore import QObject, QPoint, QRect, Qt
-from lib.side.Qt.QtGui import (QColor, QFont, QFontDatabase, QIcon, QIconEngine,
+from Qt.QtCore import QObject, QPoint, QRect, Qt
+from Qt.QtGui import (QColor, QFont, QFontDatabase, QIcon, QIconEngine,
                         QPainter, QPixmap)
-from lib.side.Qt.QtWidgets import QApplication
+from Qt.QtWidgets import QApplication
 # from six import unichr
 
 

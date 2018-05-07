@@ -1,6 +1,6 @@
 # file ui_checkout_tree_classes.py
 
-import json
+from functools import partial
 from lib.side.Qt import QtWidgets as QtGui
 from lib.side.Qt import QtGui as Qt4Gui
 from lib.side.Qt import QtCore
@@ -32,6 +32,19 @@ reload(maya_dialogs)
 reload(search_classes)
 reload(snapshot_browser_widget)
 reload(fast_controls)
+
+
+class Ui_saveConfirmWidget(QtGui.QWidget):
+    def __init__(self, parent=None):
+        super(self.__class__, self).__init__(parent=parent)
+
+        self.create_ui()
+
+    def create_ui(self):
+        dl.log('creating save_confirm widget')
+
+    def controls_actions(self):
+        pass
 
 
 class Ui_descriptionWidget(QtGui.QWidget, description_widget.Ui_descriptionWidget):
@@ -825,10 +838,35 @@ class Ui_checkInOutWidget(QtGui.QMainWindow):
 
         open_snapshot.triggered.connect(self.open_file)
 
-        open_folder = QtGui.QAction('Show folder', self)
+        open_folder = QtGui.QAction('Show Versionless folder', self)
         open_folder.setIcon(gf.get_icon('folder-open'))
 
         open_folder.triggered.connect(self.open_folder)
+
+        open_folder_v = QtGui.QAction('Show Versions folder', self)
+        open_folder_v.setIcon(gf.get_icon('folder-open'))
+
+        open_folder_v.triggered.connect(self.open_folder)
+
+        open_folder_wf = QtGui.QAction('Show Watch folder', self)
+        open_folder_wf.setIcon(gf.get_icon('folder-open'))
+
+        open_folder_wf.triggered.connect(self.open_watch_folder)
+
+        create_watch_folder = QtGui.QAction('Create Watch Folder', self)
+        create_watch_folder.setIcon(gf.get_icon('eye'))
+
+        create_watch_folder.triggered.connect(self.create_watch_folder)
+
+        edit_watch_folder = QtGui.QAction('Edit Watch Folder', self)
+        edit_watch_folder.setIcon(gf.get_icon('eye'))
+
+        edit_watch_folder.triggered.connect(self.edit_watch_folder)
+
+        remove_watch_folder = QtGui.QAction('Delete Watch Folder', self)
+        remove_watch_folder.setIcon(gf.get_icon('eye-slash'))
+
+        remove_watch_folder.triggered.connect(self.delete_watch_folder)
 
         save_selected_snapshot = QtGui.QAction('Save selected objects', self)
         save_selected_snapshot.triggered.connect(lambda: self.save_file(selected_objects=[True]))
@@ -858,12 +896,14 @@ class Ui_checkInOutWidget(QtGui.QMainWindow):
                 open_snapshot_additional = menu.addAction(open_snapshot, True)
                 open_snapshot_additional.clicked.connect(self.open_file_options)
 
-                menu.addSeparator()
+            menu.addAction(open_folder)
+            menu.addAction(open_folder_v)
+            if current_tree_widget_item.have_watch_folder:
+                menu.addAction(open_folder_wf)
+            menu.addSeparator()
 
             save_snapshot_additional = menu.addAction(save_snapshot, True)
             save_snapshot_additional.clicked.connect(self.save_file_options)
-
-            menu.addAction(open_folder)
 
             if env_mode.get_mode() == 'maya':
                 save_selected_snapshot_additional = menu.addAction(save_selected_snapshot, True)
@@ -886,6 +926,14 @@ class Ui_checkInOutWidget(QtGui.QMainWindow):
 
             # menu.addAction(update_selected_snapshot)
             # menu.addAction(update_playblast)
+
+            menu.addSeparator()
+            if current_tree_widget_item.have_watch_folder:
+                menu.addAction(edit_watch_folder)
+                menu.addAction(remove_watch_folder)
+            else:
+                menu.addAction(create_watch_folder)
+
             menu.addSeparator()
             menu.addAction(edit_info)
             menu.addSeparator()
@@ -899,7 +947,9 @@ class Ui_checkInOutWidget(QtGui.QMainWindow):
                 else:
                     open_snapshot_additional = menu.addAction(open_snapshot, True)
                     open_snapshot_additional.clicked.connect(self.open_file_options)
+
                     menu.addAction(open_folder)
+                    menu.addAction(open_folder_v)
 
                 menu.addSeparator()
 
@@ -931,12 +981,15 @@ class Ui_checkInOutWidget(QtGui.QMainWindow):
                 menu.addAction(delete_snapshot)
             else:
                 menu.addAction(open_folder)
+                menu.addAction(open_folder_v)
 
         if mode == 'process':
             save_snapshot_additional = menu.addAction(save_snapshot, True)
             save_snapshot_additional.clicked.connect(self.save_file_options)
 
-            menu.addAction(open_folder, True)
+            menu.addAction(open_folder)
+            menu.addAction(open_folder_v)
+
             if env_mode.get_mode() == 'maya':
                 save_selected_snapshot_additional = menu.addAction(save_selected_snapshot, True)
                 save_selected_snapshot_additional.clicked.connect(self.export_selected_file_options)
@@ -994,6 +1047,17 @@ class Ui_checkInOutWidget(QtGui.QMainWindow):
         else:
             self.fast_controls_tool_bar.setHidden(True)
 
+    @gf.catch_error
+    def toggle_watch_folders_ui(self):
+        watch_folders_ui = env_inst.watch_folders.get(self.project.get_code())
+
+        if watch_folders_ui:
+            if watch_folders_ui.isHidden():
+                watch_folders_ui.setHidden(False)
+                watch_folders_ui.show()
+            else:
+                watch_folders_ui.hide()
+
     def fill_gear_menu(self):
 
         self.add_new_sobject_action = QtGui.QAction('Add new {0}'.format(self.stype.get_pretty_name()), self)
@@ -1032,6 +1096,10 @@ class Ui_checkInOutWidget(QtGui.QMainWindow):
         self.fast_controls_toggle_action.triggered.connect(self.toggle_fast_controls_box)
         self.fast_controls_toggle_action.setIcon(gf.get_icon('tachometer'))
 
+        self.watch_folder_toggle_action = QtGui.QAction('Watch Folders Ui', self)
+        self.watch_folder_toggle_action.triggered.connect(self.toggle_watch_folders_ui)
+        self.watch_folder_toggle_action.setIcon(gf.get_icon('eye'))
+
         self.search_widget.add_action_to_gear_menu(self.add_new_sobject_action)
         self.search_widget.add_action_to_gear_menu(self.filter_process_action)
         if env_mode.get_mode() == 'maya':
@@ -1042,6 +1110,7 @@ class Ui_checkInOutWidget(QtGui.QMainWindow):
         self.search_widget.add_action_to_gear_menu(self.checkin_options_toggle_action)
         self.search_widget.add_action_to_gear_menu(self.drop_plate_toggle_action)
         self.search_widget.add_action_to_gear_menu(self.fast_controls_toggle_action)
+        self.search_widget.add_action_to_gear_menu(self.watch_folder_toggle_action)
 
     def fill_collapsable_toolbar(self):
 
@@ -1083,7 +1152,8 @@ class Ui_checkInOutWidget(QtGui.QMainWindow):
         self.search_widget.add_widget_to_collapsable_toolbar(self.add_new_sobject_button)
         self.search_widget.add_widget_to_collapsable_toolbar(self.filter_process_button)
         self.search_widget.add_widget_to_collapsable_toolbar(self.toggle_search_options_button)
-        self.search_widget.add_widget_to_collapsable_toolbar(self.naming_editor_button)
+        # removed until naming editor created
+        # self.search_widget.add_widget_to_collapsable_toolbar(self.naming_editor_button)
 
         if env_mode.get_mode() == 'maya':
             self.search_widget.add_widget_to_collapsable_toolbar(self.find_opened_sobject_button)
@@ -1128,6 +1198,33 @@ class Ui_checkInOutWidget(QtGui.QMainWindow):
 
         return file_path, dir_path, all_process
 
+    @gf.catch_error
+    def create_watch_folder(self):
+
+        current_widget = self.get_current_tree_widget()
+        current_tree_widget_item = current_widget.get_current_tree_widget_item()
+
+        watch_folders_ui = env_inst.watch_folders.get(self.project.get_code())
+        watch_folders_ui.add_aseet_to_watch(current_tree_widget_item)
+
+    @gf.catch_error
+    def edit_watch_folder(self):
+
+        current_widget = self.get_current_tree_widget()
+        current_tree_widget_item = current_widget.get_current_tree_widget_item()
+
+        watch_folders_ui = env_inst.watch_folders.get(self.project.get_code())
+        watch_folders_ui.edit_aseet_watch(current_tree_widget_item)
+
+    @gf.catch_error
+    def delete_watch_folder(self):
+
+        current_widget = self.get_current_tree_widget()
+        current_tree_widget_item = current_widget.get_current_tree_widget_item()
+
+        watch_folders_ui = env_inst.watch_folders.get(self.project.get_code())
+        watch_folders_ui.delete_aseet_from_watch(current_tree_widget_item)
+
     # Opening functions
     @gf.catch_error
     def open_file_options(self):
@@ -1153,6 +1250,24 @@ class Ui_checkInOutWidget(QtGui.QMainWindow):
         if env_mode.get_mode() == 'maya':
             self.reference_dialog = maya_dialogs.Ui_referenceOptionsWidget(file_path, nested_item)
             self.reference_dialog.show()
+
+    def get_repo_menu(self, watch_folder_dict):
+
+        base_dirs = env_tactic.get_all_base_dirs()
+
+        repo_menu = QtGui.QMenu()
+
+        for key, val in base_dirs:
+            if val['value'][4]:
+                if val['value'][3] in watch_folder_dict['rep']:
+                    repo_action = QtGui.QAction(val['value'][1], self)
+                    color = val['value'][2]
+                    repo_action.setIcon(gf.get_icon('square', color=Qt4Gui.QColor(color[0], color[1], color[2])))
+                    abs_path = gf.form_path(u'{0}/{1}'.format(val['value'][0], watch_folder_dict['path']))
+                    repo_action.triggered.connect(partial(gf.open_folder, abs_path))
+                    repo_menu.addAction(repo_action)
+
+        return repo_menu
 
     @gf.catch_error
     def open_file(self):
@@ -1182,6 +1297,7 @@ class Ui_checkInOutWidget(QtGui.QMainWindow):
 
         if item_type == 'sobject':
             print 'Opening sobject Folder'
+            raise Exception
         elif item_type == 'process':
             print 'Opening process Folder'
             sobject = current_tree_widget_item.get_sobject()
@@ -1189,6 +1305,19 @@ class Ui_checkInOutWidget(QtGui.QMainWindow):
             print paths
         elif item_type == 'snapshot':
             print 'Opening snapshot Folder'
+
+    @gf.catch_error
+    def open_watch_folder(self):
+
+        current_widget = self.get_current_tree_widget()
+        current_tree_widget_item = current_widget.get_current_tree_widget_item()
+
+        if current_tree_widget_item.get_type() == 'sobject':
+            repo_menu = self.get_repo_menu(current_tree_widget_item.get_watch_folder_dict())
+            if len(repo_menu.actions()) > 1:
+                repo_menu.exec_(Qt4Gui.QCursor.pos())
+            else:
+                repo_menu.actions()[0].triggered.emit()
 
     def import_file(self):
         file_path = self.get_current_item_paths()[0]
@@ -1210,11 +1339,11 @@ class Ui_checkInOutWidget(QtGui.QMainWindow):
     def checkin_file_objects(self, search_key, context, description, save_revision=False, snapshot_version=None,
                              create_icon=True, files_objects=None, checkin_type=None, keep_file_name=None):
 
-        if not files_objects:
+        if files_objects is None:
             files_objects = self.drop_plate_widget.get_selected_items()
-        if not checkin_type:
+        if checkin_type is None:
             checkin_type = self.fast_controls_tool_bar_widget.get_checkin_mode()
-        if not keep_file_name:
+        if keep_file_name is None:
             keep_file_name = self.drop_plate_widget.get_keep_filename()
 
         # print checkin_type

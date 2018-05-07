@@ -2,6 +2,7 @@
 # file ui_item_classes.py
 # Main Item for TreeWidget
 
+import os
 from lib.side.Qt import QtWidgets as QtGui
 from lib.side.Qt import QtGui as Qt4Gui
 from lib.side.Qt import QtCore
@@ -102,6 +103,8 @@ class Ui_itemWidget(QtGui.QWidget, ui_item.Ui_item):
         self.expand_state = False
         self.selected_state = False
         self.children_states = None
+        self.have_watch_folder = False
+        self.watch_folder_path = None
 
         self.controls_actions()
 
@@ -154,6 +157,86 @@ class Ui_itemWidget(QtGui.QWidget, ui_item.Ui_item):
         self.tasksToolButton.setText('| 0')
 
         self.create_item_info_widget()
+        self.create_watch_folder_button()
+        self.check_watch_folder()
+
+    def is_have_watch_folder(self):
+        if self.have_watch_folder:
+            if self.watchFolderToolButton.isChecked():
+                return True
+
+    def check_watch_folder(self, remove_watch=False):
+        watch_folder_ui = env_inst.watch_folders.get(self.project.get_code())
+        watch_dict = watch_folder_ui.get_watch_dict_by_skey(self.get_search_key())
+
+        if watch_dict and not self.have_watch_folder:
+            self.have_watch_folder = True
+            if watch_dict['status']:
+                self.set_watch_folder_enabled()
+            else:
+                self.set_watch_folder_disabled()
+            watch_folder_ui.add_item_to_watch(self)
+            self.set_watch_folder_path(watch_dict['path'])
+        elif not self.have_watch_folder:
+            self.watchFolderToolButton.setIcon(gf.get_icon('eye-slash', color=Qt4Gui.QColor(160, 160, 160)))
+
+        if remove_watch:
+            self.have_watch_folder = False
+            self.watchFolderToolButton.setChecked(False)
+            self.watchFolderToolButton.setIcon(gf.get_icon('eye-slash', color=Qt4Gui.QColor(160, 160, 160)))
+
+    def create_watch_folder_button(self):
+        self.watchFolderToolButton.setIcon(gf.get_icon('eye-slash', color=Qt4Gui.QColor(160, 160, 160)))
+        self.watchFolderToolButton.toggled.connect(self.toggle_watch_folder_button)
+        self.watchFolderToolButton.clicked.connect(self.save_watch_status)
+
+    def save_watch_status(self):
+        if self.have_watch_folder:
+            watch_folder_ui = env_inst.watch_folders.get(self.project.get_code())
+            if self.watchFolderToolButton.isChecked():
+                watch_folder_ui.edit_watch_to_watch_folders_dict(self, status=True)
+            else:
+                watch_folder_ui.edit_watch_to_watch_folders_dict(self, status=False)
+        else:
+            self.watchFolderToolButton.setChecked(False)
+            watch_folders_ui = env_inst.watch_folders.get(self.project.get_code())
+            watch_folders_ui.add_aseet_to_watch(self)
+
+    def toggle_watch_folder_button(self, state):
+        if state:
+            if self.have_watch_folder:
+                self.watchFolderToolButton.setIcon(gf.get_icon(
+                    'eye',
+                    color=Qt4Gui.QColor(100, 200, 100),
+                    color_active=Qt4Gui.QColor(120, 220, 120),
+                ))
+        else:
+            if self.have_watch_folder:
+                self.watchFolderToolButton.setIcon(gf.get_icon(
+                    'eye-slash',
+                    color=Qt4Gui.QColor(200, 100, 100),
+                    color_active=Qt4Gui.QColor(220, 120, 120),
+                ))
+
+    def set_watch_folder_enabled(self):
+        self.watchFolderToolButton.setChecked(True)
+        self.toggle_watch_folder_button(True)
+
+    def set_watch_folder_disabled(self):
+        self.watchFolderToolButton.setChecked(False)
+        self.toggle_watch_folder_button(False)
+
+    def set_watch_folder_path(self, path):
+        self.watch_folder_path = path
+
+    def get_watch_folder_path(self):
+        return self.watch_folder_path
+
+    def get_watch_folder_dict(self):
+        watch_folder_ui = env_inst.watch_folders.get(self.project.get_code())
+        watch_dict = watch_folder_ui.get_watch_dict_by_skey(self.get_search_key())
+
+        return watch_dict
 
     def set_drop_indicator_on(self):
         if self.drop_wdg.isHidden():
@@ -569,10 +652,36 @@ class Ui_itemWidget(QtGui.QWidget, ui_item.Ui_item):
             return pipeline.process
 
     def get_process_list(self, include_builtins=False, include_hierarchy=False):
-        process = []
-        for process_widget in self.process_items:
-            process.append(process_widget.process)
-        return process
+        # process = []
+        # for process_widget in self.process_items:
+        #     process.append(process_widget.process)
+        # return process
+
+        if self.stype.pipeline:
+            builtins = ['icon', 'attachment', 'publish']
+            current_pipeline = self.stype.pipeline.get(self.sobject.get_pipeline_code())
+            workflow = self.stype.get_workflow()
+            processes_list = current_pipeline.get_all_processes_names()
+            sub_processes_list = []
+
+            # getting sub-processes from workflow
+            for process, process_info in current_pipeline.process.items():
+                if process_info.get('type') == 'hierarchy':
+                    child_pipeline = workflow.get_child_pipeline_by_process_code(
+                        current_pipeline,
+                        process
+                    )
+                    sub_processes_list.extend(child_pipeline.get_all_processes_names())
+
+            if include_hierarchy:
+                processes_list.extend(sub_processes_list)
+                if include_builtins:
+                    processes_list.extend(builtins)
+
+            if include_builtins:
+                processes_list.extend(builtins)
+
+            return processes_list
 
     def get_children_list(self):
         children_list = []
@@ -664,7 +773,7 @@ class Ui_itemWidget(QtGui.QWidget, ui_item.Ui_item):
         pass
 
     def get_search_key(self):
-        return self.sobject.info.get('__search_key__')
+        return self.sobject.get_search_key()
 
     def get_parent_search_key(self):
         parent_item = self.get_parent_item_widget()
@@ -688,6 +797,13 @@ class Ui_itemWidget(QtGui.QWidget, ui_item.Ui_item):
     def delete_current_snapshot_sobject(self):
 
         print 'DELETING SNAPSHOT', self.get_sobject()
+
+    def closeEvent(self, event):
+        if self.have_watch_folder:
+            watch_folder_ui = env_inst.watch_folders.get(self.project.get_code())
+            watch_folder_ui.remove_item_from_watch(self)
+
+        event.accept()
 
     def mouseDoubleClickEvent(self, event):
         do_dbl_click = None

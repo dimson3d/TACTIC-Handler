@@ -50,13 +50,9 @@ class Ui_serverPageWidget(QtGui.QWidget, ui_serverPage.Ui_serverPageWidget):
         self.readSettings()
         self.create_ping_progress_dialog()
         self.set_server_status()
-        # self.threadsActions()
         self.controls_actions()
 
         self.environmentsGroupBox.setEnabled(False)
-
-    # def threadsActions(self):
-    #     self.ping_thread.finished.connect(lambda: self.try_connect_to_server(try_connect=True))
 
     def create_ping_progress_dialog(self):
         timeout = env_server.get_timeout()
@@ -234,80 +230,6 @@ class Ui_serverPageWidget(QtGui.QWidget, ui_serverPage.Ui_serverPageWidget):
             if self.restart_after_check:
                 env_inst.ui_conf.restart(force=True)
 
-
-                            # self.tacticStatusLable.setText('Status: <b><span style="color:#a5af19;">Ping OK</span></b>')
-            # else:
-            #     print(5, 'SETTING ONLINE')
-            #     env_mode.set_online()
-            #     print(6, 'SWITCH ONLINE STATUS')
-            #     env_inst.ui_conf.switch_to_online_status(True)
-            #     print(7, 'RESTARTING UI CONF')
-            #     env_inst.ui_conf.restart(force=True)
-            #     print(8, 'CHECKING SERVER STATUS')
-            #     self.check_server_status()
-            #     self.apply_and_connect_to_server_stop()
-            #     self.ping_progress_dialog.setValue(100)
-
-                # if env_inst.ui_conf.need_restart:
-                #     env_inst.ui_conf.need_restart = False
-
-    # def try_connect_to_server_error(self, result=None):
-    #     if result:
-    #         self.set_api_status(False)
-    #         self.set_ticket_status('unknown')
-    #         env_inst.ui_conf.need_restart = True
-    #         env_mode.set_offline()
-    #
-    #         # env_inst.ui_conf.restart(force=True)
-    #         # self.check_server_status()
-    #
-    #         gf.error_handle(result)
-    #         # env_inst.ui_conf.need_restart = True
-    #
-    # def try_connect_to_server(self, result=None, run_thread=False):
-    #     if run_thread:
-    #         # self.save_config()
-    #         print 2, 'run thread'
-    #
-    #         def server_fast_ping_agent():
-    #             print 'FAST PING AGENT'
-    #             return tc.server_fast_ping()
-    #
-    #         stypes_items_worker = gf.get_thread_worker(
-    #             server_fast_ping_agent,
-    #             self.thread_pool,
-    #             result_func=self.try_connect_to_server,
-    #             error_func=self.try_connect_to_server_error
-    #         )
-    #         print 3, 'starting fast ping agent'
-    #         stypes_items_worker.try_start()
-    #
-    #     if result:
-    #         print 4, 'OK RESULT', result
-    #
-    #         if result == 'ping_ok':
-    #             env_inst.ui_conf.need_restart = True
-    #
-    #             self.set_api_status(True)
-    #             # self.set_ticket_status('unknown')
-    #             if not env_server.get_ticket():
-    #                 self.set_ticket_status('gen')
-    #                 env_mode.set_offline()
-    #             else:
-    #                 current_ticket = tc.server_start().get_login_ticket()
-    #                 print current_ticket, 'THIS IS CURRENT TICKET'
-    #                 print env_server.get_ticket(), 'THIS IS FROM BASE TICKET'
-    #                 if current_ticket:
-    #                     if env_server.get_ticket() == current_ticket:
-    #                         self.set_ticket_status('match')
-    #                         env_mode.set_online()
-    #                     else:
-    #                         self.set_ticket_status()
-    #                         env_mode.set_offline()
-    #                 else:
-    #                     self.set_ticket_status('gen')
-    #                     env_mode.set_offline()
-
     def change_server_preset(self):
 
         env_server.set_cur_srv_preset(self.serverPresetsComboBox.currentText())
@@ -327,8 +249,6 @@ class Ui_serverPageWidget(QtGui.QWidget, ui_serverPage.Ui_serverPageWidget):
         self.proxyPasswordLineEdit.setText(proxy['pass'])
         self.proxyServerLineEdit.setText(proxy['server'])
         self.proxyGroupBox.setChecked(proxy['enabled'])
-
-        # self.collect_defaults(apply_values=True)
 
     def edit_server_presets(self):
 

@@ -20,6 +20,12 @@
    </property>
    <item row="1" column="1">
     <widget class="QGroupBox" name="processTabsFilterGroupBox">
+     <property name="font">
+      <font>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
      <property name="title">
       <string>Filter Process Tabs (Per Project only)</string>
      </property>
@@ -34,10 +40,13 @@
      </property>
      <layout class="QVBoxLayout" name="processTabsFilterLayout">
       <property name="leftMargin">
-       <number>9</number>
+       <number>10</number>
+      </property>
+      <property name="topMargin">
+       <number>24</number>
       </property>
       <property name="rightMargin">
-       <number>0</number>
+       <number>9</number>
       </property>
       <property name="bottomMargin">
        <number>0</number>
@@ -78,6 +87,12 @@
    </item>
    <item row="0" column="1">
     <widget class="QGroupBox" name="controlsTabsFilterGroupBox">
+     <property name="font">
+      <font>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
      <property name="title">
       <string>Filter Control Tabs</string>
      </property>
@@ -92,9 +107,15 @@
      </property>
      <layout class="QGridLayout" name="controlsTabsFilterLayout">
       <property name="leftMargin">
-       <number>9</number>
+       <number>10</number>
+      </property>
+      <property name="topMargin">
+       <number>24</number>
       </property>
       <property name="rightMargin">
+       <number>9</number>
+      </property>
+      <property name="bottomMargin">
        <number>0</number>
       </property>
       <item row="0" column="0" rowspan="3" colspan="4">

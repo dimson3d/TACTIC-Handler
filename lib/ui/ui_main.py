@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file './ui_main.ui'
 #
-# Created: Wed Dec 20 19:00:46 2017
+# Created: Mon May  7 17:03:09 2018
 #      by: pyside-uic 0.2.15 running on PySide 1.2.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -14,6 +14,7 @@ class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
         MainWindow.setWindowModality(QtCore.Qt.ApplicationModal)
+        MainWindow.resize(427, 276)
         MainWindow.setMinimumSize(QtCore.QSize(427, 276))
         MainWindow.setStyleSheet("QTreeView {\n"
 "    show-decoration-selected: 1;\n"
@@ -57,21 +58,38 @@ class Ui_MainWindow(object):
 "    border: 0px;\n"
 "}\n"
 "QTabBar::tab {\n"
-"    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 rgba(175, 175, 175, 16), stop: 1 rgba(175, 175, 175, 0));\n"
-"    border: 0px solid transparent;\n"
-"    border-top-left-radius: 2px;\n"
-"    border-top-right-radius: 2px;\n"
+"    background: transparent;\n"
+"    border: 2px solid transparent;\n"
+"    border-top-right-radius: 0px;\n"
+"    border-top-left-radius: 0px;\n"
+"    border-bottom-right-radius: 3px;\n"
+"    border-bottom-left-radius: 3px;\n"
 "    padding: 4px;\n"
 "}\n"
 "QTabBar::tab:selected, QTabBar::tab:hover {\n"
-"    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 rgba(255, 255, 255, 64), stop: 1 rgba(255, 255, 255, 8));\n"
+"    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 rgba(255, 255, 255, 32), stop: 1 rgba(255, 255, 255, 48));\n"
 "}\n"
 "QTabBar::tab:selected {\n"
 "    border-color: transparent;\n"
 "}\n"
 "QTabBar::tab:!selected {\n"
-"    margin-top: 2px;\n"
-"}")
+"    margin-top: 0px;\n"
+"}\n"
+"QGroupBox {\n"
+"    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 rgba(175, 175, 175, 16), stop: 1 rgba(0, 0, 0, 0));\n"
+"    border: 0px;\n"
+"    border-radius: 4px;\n"
+"    padding: 0px 8px;\n"
+"}\n"
+"\n"
+"QGroupBox::title {\n"
+"    subcontrol-origin: margin;\n"
+"    subcontrol-position: left top; \n"
+"    padding: 2 6px;\n"
+"    background-color: transparent;\n"
+"    border-bottom: 2px solid qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 rgba(128, 128, 128, 64), stop:1 rgba(128, 128,128, 0));\n"
+"}\n"
+"")
         MainWindow.setLocale(QtCore.QLocale(QtCore.QLocale.English, QtCore.QLocale.UnitedStates))
         MainWindow.setWindowFilePath("")
         MainWindow.setDockNestingEnabled(True)
@@ -80,7 +98,7 @@ class Ui_MainWindow(object):
         self.mainwidget.setObjectName("mainwidget")
         MainWindow.setCentralWidget(self.mainwidget)
         self.menubar = QtGui.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 427, 25))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 427, 24))
         self.menubar.setObjectName("menubar")
         self.menuConfig = QtGui.QMenu(self.menubar)
         self.menuConfig.setObjectName("menuConfig")

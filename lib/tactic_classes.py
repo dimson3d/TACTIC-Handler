@@ -7,7 +7,7 @@ import shutil
 import urlparse
 import collections
 import json
-from lib.side.bs4 import BeautifulSoup
+from bs4 import BeautifulSoup
 from lib.side.Qt import QtWidgets as QtGui
 from lib.side.Qt import QtGui as Qt4Gui
 from lib.side.Qt import QtCore

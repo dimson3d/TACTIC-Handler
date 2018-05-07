@@ -11,6 +11,12 @@
    </property>
    <item>
     <widget class="QGroupBox" name="authorizingGroupBox">
+     <property name="font">
+      <font>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
      <property name="title">
       <string>Authorization:</string>
      </property>
@@ -18,7 +24,16 @@
       <bool>true</bool>
      </property>
      <layout class="QGridLayout" name="authorizationLayout" columnstretch="0,1,0,0">
+      <property name="leftMargin">
+       <number>10</number>
+      </property>
+      <property name="topMargin">
+       <number>24</number>
+      </property>
       <property name="rightMargin">
+       <number>9</number>
+      </property>
+      <property name="bottomMargin">
        <number>0</number>
       </property>
       <item row="2" column="0">
@@ -147,6 +162,12 @@
    </item>
    <item>
     <widget class="QGroupBox" name="proxyGroupBox">
+     <property name="font">
+      <font>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
      <property name="title">
       <string>Proxy Settings:</string>
      </property>
@@ -160,7 +181,16 @@
       <bool>false</bool>
      </property>
      <layout class="QGridLayout" name="proxyGridLayout">
+      <property name="leftMargin">
+       <number>10</number>
+      </property>
+      <property name="topMargin">
+       <number>24</number>
+      </property>
       <property name="rightMargin">
+       <number>9</number>
+      </property>
+      <property name="bottomMargin">
        <number>0</number>
       </property>
       <item row="0" column="0">
@@ -211,6 +241,12 @@
      <property name="enabled">
       <bool>false</bool>
      </property>
+     <property name="font">
+      <font>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
      <property name="title">
       <string>Tactic Environments (Only for TACTIC Team):</string>
      </property>
@@ -218,7 +254,16 @@
       <bool>true</bool>
      </property>
      <layout class="QGridLayout" name="environmentLayout">
+      <property name="leftMargin">
+       <number>10</number>
+      </property>
+      <property name="topMargin">
+       <number>24</number>
+      </property>
       <property name="rightMargin">
+       <number>9</number>
+      </property>
+      <property name="bottomMargin">
        <number>0</number>
       </property>
       <item row="0" column="0">

@@ -167,7 +167,7 @@ class Ui_serverPresetsEditorWidget(QtGui.QDialog):
         self.presets_tree_widget.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
         self.presets_tree_widget.setRootIsDecorated(False)
         self.presets_tree_widget.setHeaderHidden(True)
-        self.presets_tree_widget.setObjectName("presets_tree_widget")
+        self.presets_tree_widget.setObjectName('presets_tree_widget')
 
         self.main_layout.addWidget(self.presets_tree_widget, 1, 0, 2, 1)
 
@@ -386,7 +386,7 @@ class Ui_debugLogWidget(QtGui.QDialog, ui_debuglog.Ui_DebugLog):
         self.setSizeGripEnabled(True)
 
         self.controls_actions()
-        self.debugLogTextEdit.setWordWrapMode(Qt4Gui.QTextOption.NoWrap)
+        # self.debugLogTextEdit.setWordWrapMode(Qt4Gui.QTextOption.NoWrap)
 
     def controls_actions(self):
 
@@ -467,8 +467,10 @@ class Ui_debugLogWidget(QtGui.QDialog, ui_debuglog.Ui_DebugLog):
         if subgroup_list:
             return self.recursive_add_items(group_item, subgroup_list)
 
-    def add_debuglog(self, debuglog_dict, message_type):
-        self.debugLogTextEdit.append(self.format_debuglog(debuglog_dict, message_type))
+    def add_debuglog(self, debuglog_dict, message_type, print_log=False):
+        self.debugLogTextEdit.append(self.format_debuglog(debuglog_dict[1], message_type))
+        if print_log:
+            print(self.format_debuglog(debuglog_dict[1], message_type, False))
 
     def format_debuglog(self, debuglog_dict, message_type, html=True):
 
@@ -485,9 +487,15 @@ class Ui_debugLogWidget(QtGui.QDialog, ui_debuglog.Ui_DebugLog):
                 color = '009933'
             elif message_type == '[ WRN ]':
                 color = 'ffcc00'
+            elif message_type == '[ ERR ]':
+                color = 'ff1a1a'
+            elif message_type == '[ CRL ]':
+                color = '3385ff'
+            elif message_type == '[ EXC ]':
+                color = 'ff8080'
             else:
                 color = 'a5a5a5'
-            return '<br><span style="color:#{0};">{1}</span></br>'.format(color, trace_str)
+            return '<span style="color:#{0};">{1}</span>'.format(color, trace_str)
         else:
             return trace_str
 

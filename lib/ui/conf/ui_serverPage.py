@@ -2,12 +2,13 @@
 
 # Form implementation generated from reading ui file 'conf/ui_serverPage.ui'
 #
-# Created: Thu Jan 18 18:49:06 2018
+# Created: Mon May  7 15:40:19 2018
 #      by: pyside-uic 0.2.15 running on PySide 1.2.2
 #
 # WARNING! All changes made in this file will be lost!
 
 from lib.side.Qt import QtWidgets as QtGui
+from lib.side.Qt import QtGui as Qt4Gui
 from lib.side.Qt import QtCore
 
 class Ui_serverPageWidget(object):
@@ -18,10 +19,14 @@ class Ui_serverPageWidget(object):
         self.serverPageWidgetLayout.setContentsMargins(0, 0, 0, 0)
         self.serverPageWidgetLayout.setObjectName("serverPageWidgetLayout")
         self.authorizingGroupBox = QtGui.QGroupBox(serverPageWidget)
+        font = Qt4Gui.QFont()
+        font.setWeight(75)
+        font.setBold(True)
+        self.authorizingGroupBox.setFont(font)
         self.authorizingGroupBox.setFlat(True)
         self.authorizingGroupBox.setObjectName("authorizingGroupBox")
         self.authorizationLayout = QtGui.QGridLayout(self.authorizingGroupBox)
-        self.authorizationLayout.setContentsMargins(-1, -1, 0, -1)
+        self.authorizationLayout.setContentsMargins(10, 24, 9, 0)
         self.authorizationLayout.setObjectName("authorizationLayout")
         self.userNameLable = QtGui.QLabel(self.authorizingGroupBox)
         self.userNameLable.setMinimumSize(QtCore.QSize(120, 0))
@@ -75,12 +80,16 @@ class Ui_serverPageWidget(object):
         self.authorizationLayout.setColumnStretch(1, 1)
         self.serverPageWidgetLayout.addWidget(self.authorizingGroupBox)
         self.proxyGroupBox = QtGui.QGroupBox(serverPageWidget)
+        font = Qt4Gui.QFont()
+        font.setWeight(75)
+        font.setBold(True)
+        self.proxyGroupBox.setFont(font)
         self.proxyGroupBox.setFlat(True)
         self.proxyGroupBox.setCheckable(True)
         self.proxyGroupBox.setChecked(False)
         self.proxyGroupBox.setObjectName("proxyGroupBox")
         self.proxyGridLayout = QtGui.QGridLayout(self.proxyGroupBox)
-        self.proxyGridLayout.setContentsMargins(-1, -1, 0, -1)
+        self.proxyGridLayout.setContentsMargins(10, 24, 9, 0)
         self.proxyGridLayout.setObjectName("proxyGridLayout")
         self.proxyUserNameLabel = QtGui.QLabel(self.proxyGroupBox)
         self.proxyUserNameLabel.setMinimumSize(QtCore.QSize(120, 0))
@@ -105,10 +114,14 @@ class Ui_serverPageWidget(object):
         self.serverPageWidgetLayout.addWidget(self.proxyGroupBox)
         self.environmentsGroupBox = QtGui.QGroupBox(serverPageWidget)
         self.environmentsGroupBox.setEnabled(False)
+        font = Qt4Gui.QFont()
+        font.setWeight(75)
+        font.setBold(True)
+        self.environmentsGroupBox.setFont(font)
         self.environmentsGroupBox.setFlat(True)
         self.environmentsGroupBox.setObjectName("environmentsGroupBox")
         self.environmentLayout = QtGui.QGridLayout(self.environmentsGroupBox)
-        self.environmentLayout.setContentsMargins(-1, -1, 0, -1)
+        self.environmentLayout.setContentsMargins(10, 24, 9, 0)
         self.environmentLayout.setObjectName("environmentLayout")
         self.tacticEnvLable = QtGui.QLabel(self.environmentsGroupBox)
         self.tacticEnvLable.setMinimumSize(QtCore.QSize(120, 0))

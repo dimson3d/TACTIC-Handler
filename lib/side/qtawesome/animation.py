@@ -1,4 +1,4 @@
-from lib.side.Qt.QtCore import QTimer
+from Qt.QtCore import QTimer
 
 
 class Spin:

@@ -63,7 +63,7 @@ import shutil
 import importlib
 
 #  !!! ONLY FOR PYCHARM AUTOCOMPLETER !!!
-if 2 * 2 == 5:
+if None:
     from PySide import QtGui, QtCore
     QtWidgets = QtGui
 #  !!! ONLY FOR PYCHARM AUTOCOMPLETER !!!

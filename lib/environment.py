@@ -27,7 +27,7 @@ def env_write_config(obj=None, filename='settings', unique_id='', sub_id=None, u
     """
     Converts python objects to json, then writes it to disk.
     Supported writing formats: 'json', 'ini'. Format can be set via global var CFG_FORMAT.
-    If ini used, there is less sub folders will be created.
+    If ini used, there will be less sub folders created.
 
     :param obj: any dict, list etc...
     :param filename: name of the file to be written, without ext. 'settings'
@@ -132,12 +132,13 @@ class Inst(object):
     ui_super = None  # maya main window, or standalone main window
     ui_maya_dock = None  # maya docked window
     ui_main = None  # main widget inside dock, or standalone main window
-    ui_main_tabs = {}  # tabbed widgets, with check-in, checkout etc.
+    ui_main_tabs = {}  # tabbed widgets, with check-in/checkout etc.
     ui_tasks = None
     ui_notes = None
     ui_conf = None  # configuration window instance
     check_tree = {}
     control_tabs = {}
+    watch_folders = {}
     ui_addsobject = None
 
     def get_current_project(self):
@@ -147,6 +148,7 @@ class Inst(object):
         self.current_project = project_code
 
     def get_current_stypes(self):
+        # this is bad practice using this func
         return self.projects.get(self.current_project).stypes
 
     def get_current_stype_by_code(self, code):
@@ -186,6 +188,11 @@ class Inst(object):
         else:
             return self.check_tree[project_code][tab_code]
 
+    def get_watch_folder(self, project_code=None):
+        if not project_code:
+            project_code = self.current_project
+        return self.watch_folders.get(project_code)
+
     def cleanup(self, project_code=None):
         if project_code:
             if self.ui_main_tabs.get(project_code):
@@ -207,7 +214,11 @@ class DebugLog(object):
     info_dict = collections.OrderedDict()
     warning_dict = collections.OrderedDict()
     log_dict = collections.OrderedDict()
+    exception_dict = collections.OrderedDict()
+    error_dict = collections.OrderedDict()
+    critical_dict = collections.OrderedDict()
     logs_order = 0
+    print_log = False
 
     def get_trace(self, message_text, message_type, caller=2, group_id=None):
         """
@@ -218,7 +229,6 @@ class DebugLog(object):
         :param group_id: group and subgroup for uniqueness, for ex. 'Group/SubGroup/SubSubGroup'
         :return:
         """
-
         stack = inspect.stack()
 
         if stack[caller][0]:
@@ -241,7 +251,7 @@ class DebugLog(object):
             self.info_dict[trace[1]['module_path']] = [trace]
 
         if env_inst.ui_debuglog:
-            env_inst.ui_debuglog.add_debuglog(trace[1], '[ INF ]')
+            env_inst.ui_debuglog.add_debuglog(trace, '[ INF ]', self.print_log)
 
     def warning(self, message, caller=2, group_id=None):
         self.logs_order += 1
@@ -252,7 +262,7 @@ class DebugLog(object):
             self.warning_dict[trace[1]['module_path']] = [trace]
 
         if env_inst.ui_debuglog:
-            env_inst.ui_debuglog.add_debuglog(trace[1], '[ WRN ]')
+            env_inst.ui_debuglog.add_debuglog(trace, '[ WRN ]', self.print_log)
 
     def log(self, message, caller=2, group_id=None):
         self.logs_order += 1
@@ -263,7 +273,40 @@ class DebugLog(object):
             self.log_dict[trace[1]['module_path']] = [trace]
 
         if env_inst.ui_debuglog:
-            env_inst.ui_debuglog.add_debuglog(trace[1], '[ LOG ]')
+            env_inst.ui_debuglog.add_debuglog(trace, '[ LOG ]', self.print_log)
+
+    def exception(self, message, caller=2, group_id=None):
+        self.logs_order += 1
+        trace = self.get_trace(message, 'exception', caller, group_id)
+        if self.exception_dict.get(trace[1]['module_path']):
+            self.exception_dict[trace[1]['module_path']].append(trace)
+        else:
+            self.exception_dict[trace[1]['module_path']] = [trace]
+
+        if env_inst.ui_debuglog:
+            env_inst.ui_debuglog.add_debuglog(trace, '[ EXC ]', self.print_log)
+
+    def error(self, message, caller=2, group_id=None):
+        self.logs_order += 1
+        trace = self.get_trace(message, 'error', caller, group_id)
+        if self.error_dict.get(trace[1]['module_path']):
+            self.error_dict[trace[1]['module_path']].append(trace)
+        else:
+            self.error_dict[trace[1]['module_path']] = [trace]
+
+        if env_inst.ui_debuglog:
+            env_inst.ui_debuglog.add_debuglog(trace, '[ ERR ]', self.print_log)
+
+    def critical(self, message, caller=2, group_id=None):
+        self.logs_order += 1
+        trace = self.get_trace(message, 'critical', caller, group_id)
+        if self.critical_dict.get(trace[1]['module_path']):
+            self.critical_dict[trace[1]['module_path']].append(trace)
+        else:
+            self.critical_dict[trace[1]['module_path']] = [trace]
+
+        if env_inst.ui_debuglog:
+            env_inst.ui_debuglog.add_debuglog(trace, '[ CRL ]', self.print_log)
 
 
 dl = DebugLog()
@@ -278,9 +321,7 @@ class Mode(object):
     def __init__(self):
         self.modes = ['maya', 'houdini', '3dsmax', 'nuke', 'standalone']
         self.status = False
-
         self.current_mode = 'standalone'
-        # self.current_project = 'sthpw'
         self.current_path = None
         self.get_current_path()
         self.platform = platform.system()
@@ -292,12 +333,6 @@ class Mode(object):
 
     def get_mode(self):
         return self.current_mode
-
-    # def set_current_project(self, project_code):
-    #     self.current_project = project_code
-    #
-    # def get_current_project(self):
-    #     return self.current_project
 
     def set_current_path(self, current_path):
         self.current_path = current_path
@@ -780,5 +815,6 @@ class Controls(object):
     def set_maya_scene(self, maya_scene):
         self.maya_scene = maya_scene
         env_write_config(filename='maya_scene', unique_id='ui_conf', obj=maya_scene, long_abs_path=True)
+
 
 cfg_controls = Controls()

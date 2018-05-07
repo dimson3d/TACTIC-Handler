@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'items/ui_item.ui'
+# Form implementation generated from reading ui file 'items\ui_item.ui'
 #
-# Created: Tue Dec 26 15:29:02 2017
-#      by: pyside-uic 0.2.15 running on PySide 1.2.2
+# Created: Sun Apr 22 00:28:12 2018
+#      by: pyside-uic 0.2.15 running on PySide 1.2.4
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -60,7 +60,6 @@ class Ui_item(object):
         self.tasksToolButton.setSizePolicy(sizePolicy)
         self.tasksToolButton.setToolButtonStyle(QtCore.Qt.ToolButtonIconOnly)
         self.tasksToolButton.setAutoRaise(True)
-        self.tasksToolButton.setArrowType(QtCore.Qt.NoArrow)
         self.tasksToolButton.setObjectName("tasksToolButton")
         self.toolsVerticalLayout.addWidget(self.tasksToolButton)
         self.relationsToolButton = QtGui.QToolButton(item)
@@ -110,6 +109,17 @@ class Ui_item(object):
         self.selectedCheckBox.setMinimumSize(QtCore.QSize(30, 0))
         self.selectedCheckBox.setObjectName("selectedCheckBox")
         self.checkBoxHorizontalLayout.addWidget(self.selectedCheckBox)
+        self.watchFolderToolButton = QtGui.QToolButton(item)
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.watchFolderToolButton.sizePolicy().hasHeightForWidth())
+        self.watchFolderToolButton.setSizePolicy(sizePolicy)
+        self.watchFolderToolButton.setText("")
+        self.watchFolderToolButton.setCheckable(True)
+        self.watchFolderToolButton.setAutoRaise(True)
+        self.watchFolderToolButton.setObjectName("watchFolderToolButton")
+        self.checkBoxHorizontalLayout.addWidget(self.watchFolderToolButton)
         self.gridLayout.addLayout(self.checkBoxHorizontalLayout, 1, 4, 1, 1)
         self.descriptionLerticalLayout = QtGui.QVBoxLayout()
         self.descriptionLerticalLayout.setSpacing(0)

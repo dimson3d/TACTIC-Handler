@@ -443,26 +443,17 @@ class Ui_mainTabs(QtGui.QWidget, ui_main_tabs.Ui_mainTabsForm):
         return settings_dict
 
     def readSettings(self):
-        """
-        Reading Settings
-        """
         self.set_settings_from_dict(env_read_config(
             filename='ui_main_tab',
             unique_id='ui_main/{0}/{1}'.format(self.current_namespace, self.current_project),
             long_abs_path=True))
 
     def writeSettings(self):
-        """
-        Writing Settings
-        """
-
         env_write_config(
             self.get_settings_dict(),
             filename='ui_main_tab',
             unique_id='ui_main/{0}/{1}'.format(self.current_namespace, self.current_project),
             long_abs_path=True)
-
-        print('Done ui_main_tab settings write')
 
     def paintEvent(self, event):
         if not self.isCreated:

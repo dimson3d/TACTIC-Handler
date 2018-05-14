@@ -178,8 +178,6 @@ class Ui_DockMain(MayaQWidgetDockableMixin, QtGui.QMainWindow):
 
         env_write_config(self.get_settings_dict(), filename='ui_maya_settings', unique_id='ui_main', long_abs_path=True)
 
-        print('Done ui_maya_dock settings write')
-
     def catch_maya_closing(self):
         QtGui.QApplication.instance().aboutToQuit.connect(env_inst.ui_main.close)
         QtGui.QApplication.instance().aboutToQuit.connect(self.close)

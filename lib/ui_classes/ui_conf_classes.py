@@ -143,6 +143,7 @@ class Ui_serverPageWidget(QtGui.QWidget, ui_serverPage.Ui_serverPageWidget):
 
     def apply_and_connect_to_server(self, result=None, run_thread=False):
         if run_thread:
+            # TODO ask dialog about apply settings
             # self.save_server_preset_config()
 
             server = self.tacticServerLineEdit.text()
@@ -155,9 +156,6 @@ class Ui_serverPageWidget(QtGui.QWidget, ui_serverPage.Ui_serverPageWidget):
 
             def server_fast_ping_agent():
                 return tc.server_fast_ping_predefined(server, proxy)
-
-            # self.ping_thread_pool.setExpiryTimeout(50)
-            # self.ping_thread_pool.setMaxThreadCount(2)
 
             stypes_items_worker = gf.get_thread_worker(
                 server_fast_ping_agent,
@@ -175,17 +173,13 @@ class Ui_serverPageWidget(QtGui.QWidget, ui_serverPage.Ui_serverPageWidget):
                     if stypes_items_progress_worker.is_signals_enabled():
                         stypes_items_progress_worker.emit_progress(i)
                     else:
-                        # print 'MAKING PROGRESS'
-                        # stypes_items_progress_worker.emit_progress(100)
                         break
                 stypes_items_progress_worker.emit_progress(100)
 
-            # print thread_worker, 'CURRENT WORKER THREAD'
             stypes_items_progress_worker = gf.get_thread_worker(
                 progress_agent,
                 self.ping_thread_pool,
                 progress_func=self.apply_and_connect_to_server_progress,
-                # stop_func=lambda: self.ping_progress_dialog.setValue(100),
             )
             stypes_items_progress_worker.add_custom_kwargs(stypes_items_worker=stypes_items_worker,
                                                            stypes_items_progress_worker=stypes_items_progress_worker)
@@ -215,13 +209,6 @@ class Ui_serverPageWidget(QtGui.QWidget, ui_serverPage.Ui_serverPageWidget):
                             if self.restart_after_check:
                                 env_mode.set_offline()
 
-                        # if env_server.get_ticket() == current_ticket:
-                        #     print tc.server_start().ping(), 'DEFAULT PING SERVER!!!'
-                        #     self.set_ticket_status('match')
-                        #     env_mode.set_online()
-                        # else:
-                        #     self.set_ticket_status()
-                        #     env_mode.set_offline()
                     else:
                         self.set_ticket_status('gen')
                         if self.restart_after_check:

@@ -139,6 +139,8 @@ class Inst(object):
     check_tree = {}
     control_tabs = {}
     watch_folders = {}
+    commit_queue = {}
+    thread_pools = {}
     ui_addsobject = None
 
     def get_current_project(self):
@@ -192,6 +194,18 @@ class Inst(object):
         if not project_code:
             project_code = self.current_project
         return self.watch_folders.get(project_code)
+
+    def get_commit_queue(self, project_code=None):
+        if not project_code:
+            project_code = self.current_project
+        return self.commit_queue.get(project_code)
+
+    def set_thread_pool(self, thread_pool, name='main'):
+        if not self.thread_pools.get(name):
+            self.thread_pools[name] = thread_pool
+
+    def get_thread_pool(self, name='main'):
+        return self.thread_pools.get(name)
 
     def cleanup(self, project_code=None):
         if project_code:

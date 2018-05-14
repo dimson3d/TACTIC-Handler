@@ -34,19 +34,6 @@ reload(snapshot_browser_widget)
 reload(fast_controls)
 
 
-class Ui_saveConfirmWidget(QtGui.QWidget):
-    def __init__(self, parent=None):
-        super(self.__class__, self).__init__(parent=parent)
-
-        self.create_ui()
-
-    def create_ui(self):
-        dl.log('creating save_confirm widget')
-
-    def controls_actions(self):
-        pass
-
-
 class Ui_descriptionWidget(QtGui.QWidget, description_widget.Ui_descriptionWidget):
     def __init__(self, project, stype, parent=None):
         super(self.__class__, self).__init__(parent=parent)
@@ -838,10 +825,15 @@ class Ui_checkInOutWidget(QtGui.QMainWindow):
 
         open_snapshot.triggered.connect(self.open_file)
 
-        open_folder = QtGui.QAction('Show Versionless folder', self)
+        open_folder = QtGui.QAction('Show folder', self)
         open_folder.setIcon(gf.get_icon('folder-open'))
 
         open_folder.triggered.connect(self.open_folder)
+
+        open_folder_vls = QtGui.QAction('Show Versionless folder', self)
+        open_folder_vls.setIcon(gf.get_icon('folder-open'))
+
+        open_folder_vls.triggered.connect(self.open_folder)
 
         open_folder_v = QtGui.QAction('Show Versions folder', self)
         open_folder_v.setIcon(gf.get_icon('folder-open'))
@@ -896,12 +888,6 @@ class Ui_checkInOutWidget(QtGui.QMainWindow):
                 open_snapshot_additional = menu.addAction(open_snapshot, True)
                 open_snapshot_additional.clicked.connect(self.open_file_options)
 
-            menu.addAction(open_folder)
-            menu.addAction(open_folder_v)
-            if current_tree_widget_item.have_watch_folder:
-                menu.addAction(open_folder_wf)
-            menu.addSeparator()
-
             save_snapshot_additional = menu.addAction(save_snapshot, True)
             save_snapshot_additional.clicked.connect(self.save_file_options)
 
@@ -919,13 +905,19 @@ class Ui_checkInOutWidget(QtGui.QMainWindow):
                     save_selected_snapshot_revision_additional = menu.addAction(save_selected_snapshot_revision, True)
                     save_selected_snapshot_revision_additional.clicked.connect(self.export_selected_file_options)
 
-                menu.addSeparator()
-
                 update_snapshot_additional = menu.addAction(update_snapshot, True)
                 update_snapshot_additional.clicked.connect(self.export_selected_file_options)
+                menu.addSeparator()
 
             # menu.addAction(update_selected_snapshot)
             # menu.addAction(update_playblast)
+
+            if current_tree_widget_item.have_watch_folder:
+                menu.addAction(open_folder_wf)
+            menu.addSeparator()
+            menu.addAction(open_folder_vls)
+            menu.addAction(open_folder_v)
+            menu.addSeparator()
 
             menu.addSeparator()
             if current_tree_widget_item.have_watch_folder:
@@ -948,13 +940,13 @@ class Ui_checkInOutWidget(QtGui.QMainWindow):
                     open_snapshot_additional = menu.addAction(open_snapshot, True)
                     open_snapshot_additional.clicked.connect(self.open_file_options)
 
-                    menu.addAction(open_folder)
-                    menu.addAction(open_folder_v)
-
-                menu.addSeparator()
-
             save_snapshot_additional = menu.addAction(save_snapshot, True)
             save_snapshot_additional.clicked.connect(self.save_file_options)
+
+            menu.addSeparator()
+
+            menu.addAction(open_folder)
+            # menu.addAction(open_folder_v)
 
             if env_mode.get_mode() == 'maya':
                 save_selected_snapshot_additional = menu.addAction(save_selected_snapshot, True)
@@ -979,15 +971,16 @@ class Ui_checkInOutWidget(QtGui.QMainWindow):
                 menu.addAction(edit_info)
                 menu.addSeparator()
                 menu.addAction(delete_snapshot)
-            else:
-                menu.addAction(open_folder)
-                menu.addAction(open_folder_v)
 
         if mode == 'process':
             save_snapshot_additional = menu.addAction(save_snapshot, True)
             save_snapshot_additional.clicked.connect(self.save_file_options)
 
-            menu.addAction(open_folder)
+            if current_tree_widget_item.have_watch_folder:
+                menu.addSeparator()
+                menu.addAction(open_folder_wf)
+            menu.addSeparator()
+            menu.addAction(open_folder_vls)
             menu.addAction(open_folder_v)
 
             if env_mode.get_mode() == 'maya':
@@ -1049,7 +1042,7 @@ class Ui_checkInOutWidget(QtGui.QMainWindow):
 
     @gf.catch_error
     def toggle_watch_folders_ui(self):
-        watch_folders_ui = env_inst.watch_folders.get(self.project.get_code())
+        watch_folders_ui = env_inst.get_watch_folder(self.project.get_code())
 
         if watch_folders_ui:
             if watch_folders_ui.isHidden():
@@ -1057,6 +1050,17 @@ class Ui_checkInOutWidget(QtGui.QMainWindow):
                 watch_folders_ui.show()
             else:
                 watch_folders_ui.hide()
+
+    @gf.catch_error
+    def toggle_commit_queue_ui(self):
+        commit_queue_ui = env_inst.get_commit_queue(self.project.get_code())
+
+        if commit_queue_ui:
+            if commit_queue_ui.isHidden():
+                commit_queue_ui.setHidden(False)
+                commit_queue_ui.show()
+            else:
+                commit_queue_ui.hide()
 
     def fill_gear_menu(self):
 
@@ -1096,6 +1100,10 @@ class Ui_checkInOutWidget(QtGui.QMainWindow):
         self.fast_controls_toggle_action.triggered.connect(self.toggle_fast_controls_box)
         self.fast_controls_toggle_action.setIcon(gf.get_icon('tachometer'))
 
+        self.commit_queue_toggle_action = QtGui.QAction('Commit Queue Ui', self)
+        self.commit_queue_toggle_action.triggered.connect(self.toggle_commit_queue_ui)
+        self.commit_queue_toggle_action.setIcon(gf.get_icon('tasks'))
+
         self.watch_folder_toggle_action = QtGui.QAction('Watch Folders Ui', self)
         self.watch_folder_toggle_action.triggered.connect(self.toggle_watch_folders_ui)
         self.watch_folder_toggle_action.setIcon(gf.get_icon('eye'))
@@ -1110,6 +1118,7 @@ class Ui_checkInOutWidget(QtGui.QMainWindow):
         self.search_widget.add_action_to_gear_menu(self.checkin_options_toggle_action)
         self.search_widget.add_action_to_gear_menu(self.drop_plate_toggle_action)
         self.search_widget.add_action_to_gear_menu(self.fast_controls_toggle_action)
+        self.search_widget.add_action_to_gear_menu(self.commit_queue_toggle_action)
         self.search_widget.add_action_to_gear_menu(self.watch_folder_toggle_action)
 
     def fill_collapsable_toolbar(self):
@@ -1346,17 +1355,9 @@ class Ui_checkInOutWidget(QtGui.QMainWindow):
         if keep_file_name is None:
             keep_file_name = self.drop_plate_widget.get_keep_filename()
 
-        # print checkin_type
-        # print selected_items, 'selected_items'
-        # print snapshot_version
-        # print keep_file_name
-
         current_widget = self.get_current_tree_widget()
         current_tree_widget_item = current_widget.get_current_tree_widget_item()
-        # print current_tree_widget_item
 
-        # selected_items = None
-        # print files_objects
         if files_objects:
 
             file_types = []
@@ -1382,13 +1383,6 @@ class Ui_checkInOutWidget(QtGui.QMainWindow):
                 metadata.append(metadata_dict)
 
             mode = 'inplace'
-            # print file_types, 'file_types'
-            # print file_names
-            # print file_paths
-            # print exts
-            # print subfolders
-            # print postfixes
-            # print metadata
 
             update_versionless = self.get_update_versionless()
             if keep_file_name:
@@ -1413,7 +1407,6 @@ class Ui_checkInOutWidget(QtGui.QMainWindow):
                 repo_name=self.get_current_repo(),
                 mode=mode,
                 create_icon=create_icon,
-                parent_wdg=self,
                 ignore_keep_file_name=False,
                 files_dict=files_dict,
                 checkin_type=checkin_type,
@@ -1457,11 +1450,11 @@ class Ui_checkInOutWidget(QtGui.QMainWindow):
 
         mode = 'inplace'
 
-        # match_template = gf.MatchTemplate(['$FILENAME.$EXT'])
-        #
-        # files_objects_dict = match_template.get_files_objects(['/path/maya.{0}'.format(types[ext_type])])
-        #
-        # print files_objects_dict, 'FILES OBJECTS'
+        match_template = gf.MatchTemplate(['$FILENAME.$EXT'])
+
+        files_objects_dict = match_template.get_files_objects(['/path/maya.{0}'.format(types[ext_type])])
+
+        print files_objects_dict, 'FILES OBJECTS'
         # item = files_objects_dict['file'][0]
         # print item.get_base_file_type()
         # print item.get_file_name(True)
@@ -1488,12 +1481,13 @@ class Ui_checkInOutWidget(QtGui.QMainWindow):
             repo_name=self.get_current_repo(),
             mode=mode,
             create_icon=True,
-            parent_wdg=self,
+            # parent_wdg=self,
             ignore_keep_file_name=ignore_keep_file_name,
             checkin_app='maya',
             selected_objects=selected_objects[0],
             ext_type=ext_type,
-            setting_workspace=False
+            setting_workspace=False,
+            files_objects=files_objects_dict.get('file')
         )
 
     @gf.catch_error
@@ -1572,8 +1566,6 @@ class Ui_checkInOutWidget(QtGui.QMainWindow):
         current_widget = self.get_current_tree_widget()
         current_tree_widget_item = current_widget.get_current_tree_widget_item()
 
-        # print current_widget, 'current_widget'
-        # print current_tree_widget_item, 'current_tree_widget_item'
         current_snapshot_version = None
         if current_tree_widget_item.type == 'snapshot' and save_revision:
             snapshot = current_tree_widget_item.get_snapshot()
@@ -1584,13 +1576,10 @@ class Ui_checkInOutWidget(QtGui.QMainWindow):
 
         if current_tree_widget_item and self.save_revision_confirm(save_revision, selected_objects):
 
-            # self.fast_controls_tool_bar_widget.set_save_button_enabled(False)
             search_key = current_tree_widget_item.get_skey(parent=True)
-            # print search_key
             context = current_tree_widget_item.get_context(True, self.fast_controls_tool_bar_widget.get_context()).replace(' ', '_')
 
             description = self.description_widget.get_description('plain')
-            # print description
 
             checkin_from_droplist = self.drop_plate_widget.fromDropListCheckBox.isChecked()
 
@@ -1630,9 +1619,6 @@ class Ui_checkInOutWidget(QtGui.QMainWindow):
                     self.description_widget.set_item(None)
                     self.fast_controls_tool_bar_widget.set_item(None)
                     current_widget.update_current_items_trees(force_full_update=True)
-        # else:
-        #     print 'nothing happen'
-            # self.savePushButton.setEnabled(False)
 
     def get_update_versionless(self):
 

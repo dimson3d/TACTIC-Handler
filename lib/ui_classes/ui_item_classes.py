@@ -10,6 +10,7 @@ from lib.side.Qt import QtCore
 from lib.environment import env_tactic, env_inst, dl, cfg_controls
 import lib.global_functions as gf
 import lib.tactic_classes as tc
+import lib.ui.items.ui_commit_item as ui_commit_item
 import lib.ui.items.ui_item as ui_item
 import lib.ui_classes.ui_misc_classes as ui_misc_classes
 import lib.ui.items.ui_item_children as ui_item_children
@@ -79,6 +80,97 @@ class Ui_infoItemsWidget(QtGui.QWidget):
         return self.items
 
 
+class Ui_commitItemWidget(QtGui.QWidget, ui_commit_item.Ui_commitItem):
+    def __init__(self, item_widget, parent=None):
+        super(self.__class__, self).__init__(parent=parent)
+
+        self.setupUi(self)
+        self.type = 'commit'
+
+        self.commit_widget = None
+        self.args_dict = None
+        self.item_widget = item_widget
+        self.progress_wdg = QtGui.QWidget(self)
+        self.progress_wdg.setHidden(True)
+        self.commited = False
+
+        self.create_ui()
+
+    def create_ui(self):
+        self.set_title('Loading...')
+        self.create_progress_indicator()
+
+    def add_args_dict(self, args_dict):
+        self.args_dict = args_dict
+
+    def get_args_dict(self):
+        return self.args_dict
+
+    def add_commit_widget(self, commit_widget):
+        self.commit_widget = commit_widget
+
+    def get_commit_widget(self):
+        return self.commit_widget
+
+    def set_title(self, title=u''):
+        self.fileNameLabel.setText(title)
+
+    def set_description(self, description=u''):
+        self.commentLabel.setText(description)
+
+    def fill_info(self):
+        file_object = self.args_dict.get('files_objects')[0]
+        self.set_title(file_object.get_pretty_file_name())
+
+        self.set_description(self.commit_widget.description)
+
+    def create_progress_indicator(self):
+        if self.progress_wdg.isHidden():
+            self.lay = QtGui.QVBoxLayout(self.progress_wdg)
+            self.lay.setSpacing(0)
+            self.lay.setContentsMargins(0, 0, 0, 0)
+            self.progress_wdg.setLayout(self.lay)
+            self.progress_bar_wdg = QtGui.QProgressBar()
+            self.progress_bar_wdg.setTextVisible(True)
+            self.progress_bar_wdg.setStyleSheet('QProgressBar {border:0px; background-color: transparent;}'
+                                            'QProgressBar::chunk {background-color: rgba(30,160,200,64);}')
+            self.progress_bar_wdg.setSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Preferred)
+            self.progress_bar_wdg.setAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
+            self.lay.addWidget(self.progress_bar_wdg)
+            self.progress_wdg.show()
+            self.progress_wdg.resize(self.size())
+
+    def set_progress_indicator_on(self):
+        self.progress_wdg.setHidden(False)
+
+    def set_progress_indicator_off(self):
+        self.progress_wdg.setHidden(True)
+
+    def set_progress_status(self, progress, info_dict):
+        self.progress_bar_wdg.setStyleSheet('QProgressBar {border:0px; background-color: transparent;}'
+                                            'QProgressBar::chunk {background-color: rgba(30,160,200,64);}')
+        self.progress_bar_wdg.setMaximum(info_dict['total_count'])
+        self.progress_bar_wdg.setValue(progress + 1)
+        self.progress_bar_wdg.setFormat(u'%v / %m {status_text}'.format(**info_dict))
+
+    def is_commit_finished(self):
+        return self.commited
+
+    def set_commit_finished(self):
+        self.progress_bar_wdg.setStyleSheet('QProgressBar {border:0px; background-color: transparent;}'
+                                            'QProgressBar::chunk {background-color: rgba(30,160,30,128);}')
+        self.progress_bar_wdg.setFormat('Commit Finished')
+        self.commited = True
+
+    def set_commit_ufinished(self):
+        self.progress_bar_wdg.setStyleSheet('QProgressBar {border:0px; background-color: transparent;}'
+                                            'QProgressBar::chunk {background-color: rgba(30,160,200,64);}')
+        self.commited = False
+
+    def resizeEvent(self, event):
+        self.progress_wdg.resize(self.size())
+
+
 class Ui_itemWidget(QtGui.QWidget, ui_item.Ui_item):
     def __init__(self, sobject, stype, info, tree_item, ignore_dict, parent=None):
         super(self.__class__, self).__init__(parent=parent)
@@ -114,9 +206,6 @@ class Ui_itemWidget(QtGui.QWidget, ui_item.Ui_item):
 
         self.create_ui()
 
-        if self.sobject:
-            self.fill_sobject_info()
-
     def get_type(self):
         return self.type
 
@@ -142,6 +231,10 @@ class Ui_itemWidget(QtGui.QWidget, ui_item.Ui_item):
         # self.thread_pool = QtCore.QThreadPool.globalInstance()
         # self.thread_pool.setMaxThreadCount(8)
         # self.drop_wdg = QtGui.QWidget(self)
+
+        if self.sobject:
+            self.fill_sobject_info()
+
         self.setMinimumWidth(260)
         self.previewLabel.setText('<span style=" font-size:14pt; font-weight:600; color:#828282;">{0}</span>'.format(
             gf.gen_acronym(self.get_title()))
@@ -279,14 +372,7 @@ class Ui_itemWidget(QtGui.QWidget, ui_item.Ui_item):
         self.dateLabel = self.get_item_info_label()
         self.tasksLabel = self.get_item_info_label()
         self.snapshotsLabel = self.get_item_info_label()
-        self.item_info_widget.add_item_to_right(self.dateLabel)
-        # self.item_info_widget.add_item(self.tasksLabel)
-        # self.item_info_widget.add_item(self.snapshotsLabel)
-
-        # self.bt = QtGui.QPushButton('Make Screenshot')
-        # self.item_info_widget.add_item(self.bt)
-        # self.bt.clicked.connect(self.make_screenshot)
-
+        # self.item_info_widget.add_item_to_right(self.dateLabel)
 
         self.fileNameLabel.setText(self.get_title())
         limit_enabled = bool(gf.get_value_from_config(cfg_controls.get_checkin(), 'snapshotDescriptionLimitCheckBox'))
@@ -841,6 +927,7 @@ class Ui_processItemWidget(QtGui.QWidget, ui_item_process.Ui_processItem):
         self.expand_state = False
         self.selected_state = False
         self.children_states = None
+        self.have_watch_folder = False
 
         self.search_widget = parent
         self.relates_to = 'checkin_out'
@@ -1273,6 +1360,7 @@ class Ui_snapshotItemWidget(QtGui.QWidget, ui_item_snapshot.Ui_snapshotItem):
         self.selected_state = False
         self.children_states = None
         self.multiple_checkin = False
+        self.have_watch_folder = False
 
         self.search_widget = parent
 
@@ -1540,8 +1628,8 @@ class Ui_snapshotItemWidget(QtGui.QWidget, ui_item_snapshot.Ui_snapshotItem):
     def set_no_versionless_view(self):
         pixmap = gf.get_icon('exclamation-circle', opacity=0.5, scale_factor=0.6).pixmap(64, Qt4Gui.QIcon.Normal)
         self.previewLabel.setPixmap(pixmap.scaledToHeight(64, QtCore.Qt.SmoothTransformation))
-        self.fileNameLabel.setText('Versionless for {0} not found'.format(self.context))
-        self.commentLabel.setText('Check this snapshot, and update versionless')
+        self.fileNameLabel.setText('Commit without versionless in {0}'.format(self.context))
+        self.commentLabel.setText('Versionless for this commit is not present')
         self.dateLabel.deleteLater()
         self.sizeLabel.deleteLater()
         self.authorLabel.deleteLater()

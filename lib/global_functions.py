@@ -124,12 +124,12 @@ class ThreadSignals(QtCore.QObject):
     finished = QtCore.Signal()
     error = QtCore.Signal(tuple)
     result = QtCore.Signal(object)
-    progress = QtCore.Signal(int)
+    progress = QtCore.Signal(object, object)
     stop = QtCore.Signal(object)
 
 
 class ThreadWorker(QtCore.QRunnable):
-    '''
+    """
     Adapted from: https://martinfitzpatrick.name/article/multithreading-pyqt-applications-with-qthreadpool/
     Worker thread
 
@@ -138,7 +138,7 @@ class ThreadWorker(QtCore.QRunnable):
     :param agent: This is function which will be started by QRunnable.
     :type agent: function
 
-    '''
+    """
 
     def __init__(self, agent, thread_pool, parent=None):
         super(ThreadWorker, self).__init__(parent=parent)
@@ -147,6 +147,7 @@ class ThreadWorker(QtCore.QRunnable):
 
         # Vars
         self.agent = agent
+
         # we can access thread_worker from running agent func
         self.agent.thread_worker = self
 
@@ -169,11 +170,11 @@ class ThreadWorker(QtCore.QRunnable):
     def is_signals_enabled(self):
         return self.signals_enabled
 
-    def start(self):
-        self.thread_pool.start(self)
+    def start(self, priority=0):
+        self.thread_pool.start(self, priority)
 
     def try_start(self):
-        self.thread_pool.tryStart(self)
+        return self.thread_pool.tryStart(self)
 
     def get_thread_pool(self):
         return self.thread_pool
@@ -225,9 +226,9 @@ class ThreadWorker(QtCore.QRunnable):
         if self.signals_enabled:
             self.signals.result.emit(result)
 
-    def emit_progress(self, progress):
-        # if self.signals_enabled:
-            self.signals.progress.emit(progress)
+    def emit_progress(self, progress, obj=None):
+        if self.signals_enabled:
+            self.signals.progress.emit(progress, obj)
 
     def emit_stop(self, stop):
         self.signals.stop.emit(stop)
@@ -253,9 +254,9 @@ class ThreadWorker(QtCore.QRunnable):
             self.set_failed(True)
             self.emit_error((exception, self))
         else:
-            self.set_failed(False)
             self.setAutoDelete(True)
             self.emit_result(result)
+            self.set_failed(False)
         finally:
             self.emit_finished()
 
@@ -1079,6 +1080,18 @@ def add_item_to_tree(tree_widget, tree_item, tree_item_widget=None, insert_pos=N
         if tree_item_widget:
             tree_widget.treeWidget().setItemWidget(tree_item, 0, tree_item_widget)
             tree_widget.treeWidget().resizeColumnToContents(0)
+
+
+def add_commit_item(parent_item, item_widget):
+    from lib.ui_classes.ui_item_classes import Ui_commitItemWidget
+
+    tree_item = QtGui.QTreeWidgetItem()
+
+    tree_item_widget = Ui_commitItemWidget(parent=parent_item, item_widget=item_widget)
+
+    add_item_to_tree(parent_item, tree_item, tree_item_widget)
+
+    return tree_item_widget
 
 
 def add_sobject_item(parent_item, parent_widget, sobject, stype, item_info, insert_pos=None, ignore_dict=None):

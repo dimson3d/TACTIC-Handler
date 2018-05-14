@@ -7,7 +7,6 @@ from lib.side.Qt import QtCore
 
 from lib.environment import env_mode
 import lib.global_functions as gf
-import lib.tactic_classes as tc
 import lib.ui.checkin_out.ui_drop_plate as ui_drop_plate
 import lib.ui.checkin_out.ui_drop_plate_config as ui_drop_plate_config
 

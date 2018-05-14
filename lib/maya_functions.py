@@ -121,22 +121,11 @@ def get_maya_info_dict():
     return info_dict
 
 
-def inplace_checkin(progress_bar, virtual_snapshot, repo_name, update_versionless, generate_icons=True,
+def inplace_checkin(virtual_snapshot, repo_name, update_versionless, generate_icons=True,
                     selected_objects=False, ext_type='mayaAscii', setting_workspace=False):
 
-    # scene_name = None
-    # playblast_name = None
-    # scene_path = None
-    # playblast_path = None
-
-    # from pprint import pprint
-
-    # for snapshot in virtual_snapshot:
-    # pprint(virtual_snapshot)
-    # if snapshot[0] == 'scene':
     scene_name = virtual_snapshot[0][1]['versioned']['names'][0]
     scene_path = gf.form_path(repo_name['value'][0] + '/' + virtual_snapshot[0][1]['versioned']['paths'][0])
-    # else:
     playblast_name = virtual_snapshot[1][1]['versioned']['names'][0]
     playblast_path = gf.form_path(repo_name['value'][0] + '/' + virtual_snapshot[1][1]['versioned']['paths'][0])
 
@@ -201,11 +190,6 @@ def inplace_checkin(progress_bar, virtual_snapshot, repo_name, update_versionles
             cmds.isolateSelect(current_panel, state=False)
             mel.eval('enableIsolateSelect {0} 0;'.format(current_panel))
 
-        # mode = 'inplace'
-        # print ext_type
-        # print full_playblast_path
-        # print full_scene_path
-
         match_template = gf.MatchTemplate(['$FILENAME.$EXT'])
         files_objects_dict = match_template.get_files_objects([full_scene_path, full_playblast_path], sort=False)
 
@@ -218,7 +202,6 @@ def inplace_checkin(progress_bar, virtual_snapshot, repo_name, update_versionles
 
         check_ok = tc.inplace_checkin(
             file_paths,
-            progress_bar,
             virtual_snapshot,
             repo_name,
             update_versionless,

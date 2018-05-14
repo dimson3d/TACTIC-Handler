@@ -11,6 +11,7 @@ import lib.tactic_classes as tc
 import lib.ui.checkin_out.ui_checkin_out_tabs as checkin_out_tabs
 import ui_checkin_out_classes as checkin_out
 import lib.ui.misc.ui_watch_folders as ui_watch_folders
+from lib.ui_classes.ui_dialogs_classes import Ui_commitQueueWidget
 
 reload(checkin_out_tabs)
 reload(checkin_out)
@@ -25,7 +26,7 @@ class Ui_projectWatchFoldersWidget(QtGui.QDialog, ui_watch_folders.Ui_ProjectWat
         self.watch_folders_dict = self.get_watch_folders_dict()
         self.watched_items = set()
 
-        env_inst.watch_folders[self.project.get_code()] = self
+        # env_inst.watch_folders[self.project.get_code()] = self
 
         self.setupUi(self)
 
@@ -119,25 +120,25 @@ class Ui_projectWatchFoldersWidget(QtGui.QDialog, ui_watch_folders.Ui_ProjectWat
         self.show()
         self.hide()
 
-        title = 'File dropped to watch folder'
-        message = 'Begin checkining file wtih path:<br> {0} <br>?'.format(event.src_path)
-
-        buttons = [('Ok', QtGui.QMessageBox.YesRole)]
-        buttons.append(('No', QtGui.QMessageBox.NoRole))
-
-        message_box = QtGui.QMessageBox(
-            QtGui.QMessageBox.Warning,
-            title,
-            message,
-            QtGui.QMessageBox.NoButton,
-            self,
-        )
-
-        for title, role in buttons:
-            message_box.addButton(title, role)
-
-        message_box.show()
-        message_box.close()
+        # title = 'File dropped to watch folder'
+        # message = 'Begin checkining file wtih path:<br> {0} <br>?'.format(event.src_path)
+        #
+        # buttons = [('Ok', QtGui.QMessageBox.YesRole)]
+        # buttons.append(('No', QtGui.QMessageBox.NoRole))
+        #
+        # message_box = QtGui.QMessageBox(
+        #     QtGui.QMessageBox.Warning,
+        #     title,
+        #     message,
+        #     QtGui.QMessageBox.NoButton,
+        #     self,
+        # )
+        #
+        # for title, role in buttons:
+        #     message_box.addButton(title, role)
+        #
+        # message_box.show()
+        # message_box.close()
 
         search_key = watch.watch_name
 
@@ -716,6 +717,7 @@ class Ui_checkInOutTabWidget(QtGui.QWidget, checkin_out_tabs.Ui_sObjTabs):
             self.add_items_to_tabs()
             self.controls_actions()
             self.create_watch_folders_ui()
+            self.create_commit_queue_ui()
 
     def controls_actions(self):
         self.hamburger_tab_button.clicked.connect(self.hamburger_button_click)
@@ -1005,6 +1007,11 @@ class Ui_checkInOutTabWidget(QtGui.QWidget, checkin_out_tabs.Ui_sObjTabs):
 
     def create_watch_folders_ui(self):
         env_inst.watch_folders[self.project.get_code()] = Ui_projectWatchFoldersWidget(
+            parent=self,
+            project=self.project)
+
+    def create_commit_queue_ui(self):
+        env_inst.commit_queue[self.project.get_code()] = Ui_commitQueueWidget(
             parent=self,
             project=self.project)
 

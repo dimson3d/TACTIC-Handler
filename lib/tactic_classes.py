@@ -1353,7 +1353,7 @@ def get_dirs_with_naming(search_key, process_list=None):
 
 
 def get_virtual_snapshot(search_key, context, files_dict, snapshot_type='file', is_revision=False, keep_file_name=False,
-                         version=None, checkin_type='file', ignore_keep_file_name=False):
+                         explicit_filename=None, version=None, checkin_type='file', ignore_keep_file_name=False):
 
     kwargs = {
         'search_key': search_key,
@@ -1362,6 +1362,7 @@ def get_virtual_snapshot(search_key, context, files_dict, snapshot_type='file', 
         'is_revision': is_revision,
         'files_dict': files_dict,
         'keep_file_name': keep_file_name,
+        'explicit_filename': explicit_filename,
         'version': version,
         'checkin_type': checkin_type,
         'ignore_keep_file_name': ignore_keep_file_name,
@@ -1377,7 +1378,7 @@ def get_virtual_snapshot(search_key, context, files_dict, snapshot_type='file', 
 
 
 def checkin_snapshot(search_key, context, snapshot_type=None, is_revision=False, description=None, version=None,
-                     update_versionless=True, keep_file_name=False, repo_name=None, virtual_snapshot=None,
+                     update_versionless=True, only_versionless=False, keep_file_name=False, repo_name=None, virtual_snapshot=None,
                      files_dict=None, mode=None, create_icon=False, files_objects=None):
 
     files_info = {
@@ -1422,6 +1423,7 @@ def checkin_snapshot(search_key, context, snapshot_type=None, is_revision=False,
         'description': description,
         'version': version,
         'update_versionless': update_versionless,
+        'only_versionless': only_versionless,
         'keep_file_name': keep_file_name,
         'files_info': files_info,
         'repo_name': repo_name['value'][3],
@@ -1594,7 +1596,7 @@ def generate_web_and_icon(source_image_path, web_save_path=None, icon_save_path=
             icon.save(icon_save_path)
 
 
-def inplace_checkin(file_paths, virtual_snapshot, repo_name, update_versionless, generate_icons=True,
+def inplace_checkin(file_paths, virtual_snapshot, repo_name, update_versionless, only_versionless=False, generate_icons=True,
                     files_objects=None, padding=None, progress_callback=None):
     check_ok = False
 
@@ -1612,8 +1614,10 @@ def inplace_checkin(file_paths, virtual_snapshot, repo_name, update_versionless,
     if update_versionless:
         versions.extend(['versionless'])
 
+    if only_versionless:
+        versions = ['versionless']
+
     for i, (key, val) in enumerate(virtual_snapshot):
-        print(key, val)
         if progress_callback:
             info_dict = {
                 'status_text': key,
@@ -1669,11 +1673,11 @@ def inplace_checkin(file_paths, virtual_snapshot, repo_name, update_versionless,
 
 # Checkin functions
 def checkin_file(search_key, context, snapshot_type='file', is_revision=False, description=None, version=None,
-                 update_versionless=True, file_types=None, file_names=None, file_paths=None, exts=None,
-                 subfolders=None, postfixes=None, metadata=None, padding=None, keep_file_name=False, repo_name=None,
-                 mode=None, create_icon=True, ignore_keep_file_name=False, checkin_app='standalone',
+                 only_versionless=False, update_versionless=True, file_types=None, file_names=None, file_paths=None,
+                 exts=None, subfolders=None, postfixes=None, metadata=None, padding=None, keep_file_name=False,
+                 repo_name=None, mode=None, create_icon=True, ignore_keep_file_name=False, checkin_app='standalone',
                  selected_objects=False, ext_type='mayaAscii', setting_workspace=False, checkin_type='file',
-                 files_dict=None, item_widget=None, files_objects=None):
+                 files_dict=None, item_widget=None, files_objects=None, explicit_filename=None):
 
     if not files_dict:
         files_dict = []
@@ -1707,10 +1711,12 @@ def checkin_file(search_key, context, snapshot_type='file', is_revision=False, d
         'description': description,
         'version': version,
         'update_versionless': update_versionless,
+        'only_versionless': only_versionless,
         'file_paths': file_paths,
         'padding': padding,
         'files_dict': files_dict,
         'keep_file_name': keep_file_name,
+        'explicit_filename': explicit_filename,
         'repo_name': repo_name,
         'mode': mode,
         'create_icon': create_icon,
@@ -1721,8 +1727,7 @@ def checkin_file(search_key, context, snapshot_type='file', is_revision=False, d
         'setting_workspace': setting_workspace,
         'checkin_type': checkin_type,
         'item_widget': item_widget,
-        'files_objects': files_objects
-
+        'files_objects': files_objects,
     }
 
     project_code = split_search_key(search_key)

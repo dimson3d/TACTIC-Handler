@@ -476,9 +476,9 @@ class Ui_fastControlsWidget(QtGui.QWidget, fast_controls.Ui_fastControls):
         self.explicitFilenameLineEdit_clear_button_layout.addWidget(self.explicitFilenameLineEdit_clear_button)
         self.explicitFilenameLineEdit_clear_button.setHidden(True)
 
-        if env_mode.get_mode() == 'standalone':
-            self.explicitFilenameLabel.setHidden(True)
-            self.explicitFilenameLineEdit.setHidden(True)
+        # if env_mode.get_mode() == 'standalone':
+        #     self.explicitFilenameLabel.setHidden(True)
+        #     self.explicitFilenameLineEdit.setHidden(True)
 
     def freeze_explicit_filename_edit(self):
         self.explicitFilenameLineEdit.setStyleSheet('QLineEdit{border-color: rgba(0,192,255,192);}')
@@ -825,20 +825,20 @@ class Ui_checkInOutWidget(QtGui.QMainWindow):
 
         open_snapshot.triggered.connect(self.open_file)
 
-        open_folder = QtGui.QAction('Show folder', self)
+        open_folder = QtGui.QAction('Show Folder', self)
         open_folder.setIcon(gf.get_icon('folder-open'))
 
         open_folder.triggered.connect(self.open_folder)
 
-        open_folder_vls = QtGui.QAction('Show Versionless folder', self)
+        open_folder_vls = QtGui.QAction('Show Folder', self)
         open_folder_vls.setIcon(gf.get_icon('folder-open'))
 
-        open_folder_vls.triggered.connect(self.open_folder)
+        open_folder_vls.triggered.connect(lambda: self.open_folder('versionless'))
 
-        open_folder_v = QtGui.QAction('Show Versions folder', self)
+        open_folder_v = QtGui.QAction('Show Folder Versions', self)
         open_folder_v.setIcon(gf.get_icon('folder-open'))
 
-        open_folder_v.triggered.connect(self.open_folder)
+        open_folder_v.triggered.connect(lambda: self.open_folder('versions'))
 
         open_folder_wf = QtGui.QAction('Show Watch folder', self)
         open_folder_wf.setIcon(gf.get_icon('folder-open'))
@@ -881,6 +881,10 @@ class Ui_checkInOutWidget(QtGui.QMainWindow):
         delete_snapshot = QtGui.QAction('Delete', self)
         delete_snapshot.setIcon(gf.get_icon('remove'))
         delete_snapshot.triggered.connect(self.delete_sobject)
+
+        delete_snapshot_tree = QtGui.QAction('Delete Whole Tree', self)
+        delete_snapshot_tree.setIcon(gf.get_icon('remove'))
+        delete_snapshot_tree.triggered.connect(self.delete_sobject)
 
         # if not tool_button:
         if mode == 'sobject':
@@ -946,7 +950,6 @@ class Ui_checkInOutWidget(QtGui.QMainWindow):
             menu.addSeparator()
 
             menu.addAction(open_folder)
-            # menu.addAction(open_folder_v)
 
             if env_mode.get_mode() == 'maya':
                 save_selected_snapshot_additional = menu.addAction(save_selected_snapshot, True)
@@ -971,6 +974,8 @@ class Ui_checkInOutWidget(QtGui.QMainWindow):
                 menu.addAction(edit_info)
                 menu.addSeparator()
                 menu.addAction(delete_snapshot)
+                if current_tree_widget_item.is_versionless():
+                    menu.addAction(delete_snapshot_tree)
 
         if mode == 'process':
             save_snapshot_additional = menu.addAction(save_snapshot, True)
@@ -1273,7 +1278,7 @@ class Ui_checkInOutWidget(QtGui.QMainWindow):
                     color = val['value'][2]
                     repo_action.setIcon(gf.get_icon('square', color=Qt4Gui.QColor(color[0], color[1], color[2])))
                     abs_path = gf.form_path(u'{0}/{1}'.format(val['value'][0], watch_folder_dict['path']))
-                    repo_action.triggered.connect(partial(gf.open_folder, abs_path))
+                    repo_action.triggered.connect(partial(gf.open_folder, abs_path, False))
                     repo_menu.addAction(repo_action)
 
         return repo_menu
@@ -1285,7 +1290,7 @@ class Ui_checkInOutWidget(QtGui.QMainWindow):
             file_path, dir_path, all_process = self.get_current_item_paths()
             mf.open_scene(file_path, dir_path, all_process)
         else:
-            print 'opening standalone'
+            # print 'opening standalone'
             current_widget = self.get_current_tree_widget()
             current_tree_widget_item = current_widget.get_current_tree_widget_item()
             current_snapshot = current_tree_widget_item.get_snapshot()
@@ -1295,25 +1300,64 @@ class Ui_checkInOutWidget(QtGui.QMainWindow):
                     break
 
     @gf.catch_error
-    def open_folder(self):
-        print 'getting paths'
-
-        print 'opening'
+    def open_folder(self, typ='versionless'):
 
         current_widget = self.get_current_tree_widget()
         current_tree_widget_item = current_widget.get_current_tree_widget_item()
         item_type = current_tree_widget_item.get_type()
 
+        base_dirs = env_tactic.get_all_base_dirs()
+        active_repo = []
+        for key, val in base_dirs:
+            if val['value'][4]:
+                active_repo.append(val['value'][3])
+
         if item_type == 'sobject':
-            print 'Opening sobject Folder'
-            raise Exception
+            sobject = current_tree_widget_item.get_sobject()
+            paths = tc.get_dirs_with_naming(sobject.get_search_key(), ['publish'])
+            paths_dict = {
+                'path': paths.get(typ)[0],
+                'rep': active_repo,
+            }
+
+            repo_menu = self.get_repo_menu(paths_dict)
+            if len(repo_menu.actions()) > 1:
+                repo_menu.exec_(Qt4Gui.QCursor.pos())
+            else:
+                repo_menu.actions()[0].triggered.emit()
         elif item_type == 'process':
-            print 'Opening process Folder'
             sobject = current_tree_widget_item.get_sobject()
             paths = tc.get_dirs_with_naming(sobject.get_search_key(), [current_tree_widget_item.process])
-            print paths
+            paths_dict = {
+                'path': paths.get(typ)[0],
+                'rep': active_repo,
+            }
+
+            repo_menu = self.get_repo_menu(paths_dict)
+            if len(repo_menu.actions()) > 1:
+                repo_menu.exec_(Qt4Gui.QCursor.pos())
+            else:
+                repo_menu.actions()[0].triggered.emit()
+
         elif item_type == 'snapshot':
-            print 'Opening snapshot Folder'
+            snapshot = current_tree_widget_item.get_snapshot()
+            if snapshot:
+                files = snapshot.get_files_objects()
+                if files:
+                    files[0].open_folder()
+            else:
+                sobject = current_tree_widget_item.get_sobject()
+                paths = tc.get_dirs_with_naming(sobject.get_search_key(), [current_tree_widget_item.process])
+                paths_dict = {
+                    'path': paths.get(typ)[0],
+                    'rep': active_repo,
+                }
+
+                repo_menu = self.get_repo_menu(paths_dict)
+                if len(repo_menu.actions()) > 1:
+                    repo_menu.exec_(Qt4Gui.QCursor.pos())
+                else:
+                    repo_menu.actions()[0].triggered.emit()
 
     @gf.catch_error
     def open_watch_folder(self):
@@ -1388,6 +1432,9 @@ class Ui_checkInOutWidget(QtGui.QMainWindow):
             if keep_file_name:
                 update_versionless = False
 
+            explicit_filename = self.fast_controls_tool_bar_widget.get_explicit_filename()
+            only_versionless = False
+
             return tc.checkin_file(
                 search_key=search_key,
                 context=context,
@@ -1395,6 +1442,7 @@ class Ui_checkInOutWidget(QtGui.QMainWindow):
                 version=snapshot_version,
                 is_revision=save_revision,
                 update_versionless=update_versionless,
+                only_versionless=only_versionless,
                 file_types=file_types,
                 file_names=file_names,
                 file_paths=file_paths,
@@ -1412,6 +1460,7 @@ class Ui_checkInOutWidget(QtGui.QMainWindow):
                 checkin_type=checkin_type,
                 item_widget=current_tree_widget_item,
                 files_objects=files_objects,
+                explicit_filename=explicit_filename,
             )
 
     def checkin_from_maya(self, search_key, context, description, save_revision=False, snapshot_version=None,
@@ -1454,16 +1503,6 @@ class Ui_checkInOutWidget(QtGui.QMainWindow):
 
         files_objects_dict = match_template.get_files_objects(['/path/maya.{0}'.format(types[ext_type])])
 
-        print files_objects_dict, 'FILES OBJECTS'
-        # item = files_objects_dict['file'][0]
-        # print item.get_base_file_type()
-        # print item.get_file_name(True)
-        # print item.get_all_files_list()
-        # metadata_dict = item.get_metadata()
-        # metadata_dict['name_part'] = item.get_name_part()
-        # print metadata_dict['name_part']
-        # print metadata_dict
-
         return tc.checkin_file(
             search_key=search_key,
             context=context,
@@ -1487,7 +1526,8 @@ class Ui_checkInOutWidget(QtGui.QMainWindow):
             selected_objects=selected_objects[0],
             ext_type=ext_type,
             setting_workspace=False,
-            files_objects=files_objects_dict.get('file')
+            files_objects=files_objects_dict.get('file'),
+            explicit_filename=explicit_filename,
         )
 
     @gf.catch_error
@@ -1585,7 +1625,7 @@ class Ui_checkInOutWidget(QtGui.QMainWindow):
 
             if env_mode.get_mode() == 'maya':
                 if checkin_from_droplist:
-                    saved = self.checkin_file_objects(
+                    self.checkin_file_objects(
                         search_key=search_key,
                         context=context,
                         description=description,
@@ -1593,7 +1633,7 @@ class Ui_checkInOutWidget(QtGui.QMainWindow):
                         snapshot_version=current_snapshot_version,
                     )
                 else:
-                    saved = self.checkin_from_maya(
+                    self.checkin_from_maya(
                         search_key=search_key,
                         context=context,
                         description=description,
@@ -1601,24 +1641,27 @@ class Ui_checkInOutWidget(QtGui.QMainWindow):
                         snapshot_version=current_snapshot_version,
                         selected_objects=selected_objects,
                     )
-                if saved:
-                    self.description_widget.set_item(None)
-                    self.fast_controls_tool_bar_widget.set_item(None)
-                    current_widget.update_current_items_trees(force_full_update=True)
-                    self.drop_plate_widget.fromDropListCheckBox.setChecked(False)
 
             if env_mode.get_mode() == 'standalone':
-                saved = self.checkin_file_objects(
+                self.checkin_file_objects(
                     search_key=search_key,
                     context=context,
                     description=description,
                     save_revision=save_revision,
                     snapshot_version=current_snapshot_version,
                 )
-                if saved:
-                    self.description_widget.set_item(None)
-                    self.fast_controls_tool_bar_widget.set_item(None)
-                    current_widget.update_current_items_trees(force_full_update=True)
+
+    def refresh_results(self):
+
+        self.description_widget.set_item(None)
+        self.fast_controls_tool_bar_widget.set_item(None)
+
+        # current_widget = self.get_current_tree_widget()
+        # current_widget.update_current_items_trees(force_full_update=True)
+        self.refresh_current_results()
+
+        if env_mode.get_mode() == 'maya':
+            self.drop_plate_widget.fromDropListCheckBox.setChecked(False)
 
     def get_update_versionless(self):
 
@@ -1643,31 +1686,6 @@ class Ui_checkInOutWidget(QtGui.QMainWindow):
         self.add_sobject = addsobject_widget.Ui_addTacticSobjectWidget(stype=self.stype, parent=self)
 
         self.add_sobject.show()
-
-    # @gf.catch_error
-    # def delete_snapshot_sobject(self):
-    #     print 'DELETING SNAPSHOT SOBJECT'
-    #
-    #     current_widget = self.get_current_tree_widget()
-    #     current_tree_widget_item = current_widget.get_current_tree_widget_item()
-    #
-    #     if current_tree_widget_item:
-    #         # self.savePushButton.setEnabled(False)
-    #         search_key = current_tree_widget_item.get_skey(only=True)
-    #
-    #         print(search_key, 'deleting...')
-    #         print current_tree_widget_item.snapshot
-    #         print current_tree_widget_item.files
-    #         snapshot_del_confirm = tc.snapshot_delete_confirm(snapshot=current_tree_widget_item.snapshot, files=current_tree_widget_item.files)
-    #
-    #         if snapshot_del_confirm[0]:
-    #             if tc.delete_sobject_snapshot(
-    #                     sobject=search_key,
-    #                     delete_snapshot=snapshot_del_confirm[3],
-    #                     search_keys=snapshot_del_confirm[1],
-    #                     files_paths=snapshot_del_confirm[2]
-    #             ):
-    #                 self.update_snapshot_tree(current_tree_widget_item)
 
     @gf.catch_error
     def delete_sobject(self):

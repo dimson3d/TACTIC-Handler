@@ -1454,19 +1454,25 @@ def extract_dirname(filename):
 
 
 def open_file_associated(filepath):
-    if filepath:
+    if filepath and os.path.exists(filepath):
         if env_mode.get_platform() == 'Linux':
             subprocess.call(('xdg-open', filepath))
         else:
             os.startfile(filepath)
 
 
-def open_folder(filepath):
-    if filepath:
+def open_folder(filepath, highlight=True):
+    if filepath and os.path.exists(filepath):
         if env_mode.get_platform() == 'Linux':
-            subprocess.call(('nautilus', '-s', filepath))
+            if highlight:
+                subprocess.call(('nautilus', '-s', filepath))
+            else:
+                subprocess.call(('xdg-open', filepath))
         elif env_mode.get_platform() == 'Windows':
-            subprocess.call(u'explorer /select, "{0}"'.format(filepath))
+            if highlight:
+                subprocess.call(u'explorer /select, "{0}"'.format(filepath))
+            else:
+                os.startfile(filepath)
         else:
             os.startfile(filepath)
 
@@ -1588,6 +1594,7 @@ class FileObject(object):
         self._file = file_
         self._template = template_
         self._type = None
+        self._previewable = None
         self._file_type = None
         self._files_list = []
         self._file_path = None
@@ -2096,6 +2103,16 @@ class FileObject(object):
             return exist
         else:
             return os.path.exists(self.get_all_files_list(True))
+
+    def is_previewable(self):
+        if self._previewable:
+            return True
+
+        ext = self.get_file_type()
+        if ext[3] == 'preview':
+            self._previewable = True
+
+        return self._previewable
 
     def open_file(self):
         open_file_associated(form_path(self.get_all_files_list(True)))

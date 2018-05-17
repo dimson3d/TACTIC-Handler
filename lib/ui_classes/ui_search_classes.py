@@ -969,7 +969,7 @@ class Ui_searchWidget(QtGui.QWidget, search_widget.Ui_searchWidget):
 
     @gf.catch_error
     def refresh_current_results(self):
-        self.search_results_widget.refresh_current_results()
+        self.search_results_widget.refresh_current_results(True)
 
     @gf.catch_error
     def open_items_context_menu(self, *args):
@@ -1288,10 +1288,11 @@ class Ui_resultsFormWidget(QtGui.QWidget, ui_search_results_tree.Ui_resultsForm)
 
     def controls_actions(self):
         # Tree widget actions
-        self.resultsTreeWidget.itemPressed.connect(lambda:  self.set_current_results_tree_widget_item(
-            self.resultsTreeWidget))
-        self.resultsTreeWidget.itemPressed.connect(self.load_preview)
-        self.resultsTreeWidget.itemPressed.connect(self.fill_versions_items)
+        # self.resultsTreeWidget.itemPressed.connect(lambda:  self.set_current_results_tree_widget_item(
+        #     self.resultsTreeWidget))
+        # self.resultsTreeWidget.itemPressed.connect(self.load_preview)
+        # self.resultsTreeWidget.itemPressed.connect(self.fill_versions_items)
+        self.resultsTreeWidget.itemSelectionChanged.connect(self.selection_changed)
         self.resultsTreeWidget.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.resultsTreeWidget.customContextMenuRequested.connect(self.search_widget.open_items_context_menu)
 
@@ -1308,13 +1309,21 @@ class Ui_resultsFormWidget(QtGui.QWidget, ui_search_results_tree.Ui_resultsForm)
         self.resultsVersionsTreeWidget.customContextMenuRequested.connect(self.search_widget.open_items_context_menu)
         self.resultsVersionsTreeWidget.itemDoubleClicked.connect(self.send_item_double_click)
 
-    def results_tree_expand(self, event):
-        print event
-        # modifiers = QtGui.QApplication.keyboardModifiers()
-        # if modifiers == QtCore.Qt.ControlModifier:
-        #     self.commitPushButton.setHidden(False)
+    def selection_changed(self):
 
-        event.accept()
+        if self.resultsTreeWidget.selectedItems():
+            current_tree_item = self.resultsTreeWidget.selectedItems()[0]
+            self.fill_versions_items(current_tree_item, 0)
+            self.current_tree_widget_item = self.resultsTreeWidget.itemWidget(current_tree_item, 0)
+            self.load_preview()
+
+    # def results_tree_expand(self, event):
+    #     print event
+    #     # modifiers = QtGui.QApplication.keyboardModifiers()
+    #     # if modifiers == QtCore.Qt.ControlModifier:
+    #     #     self.commitPushButton.setHidden(False)
+    #
+    #     event.accept()
 
     # def set_current_tree_widget_item(self, tree_widget):
     #     self.current_tree_widget_item = tree_widget.itemWidget(tree_widget.currentItem(), 0)

@@ -100,13 +100,13 @@ class Ui_commitItemWidget(QtGui.QWidget, ui_commit_item.Ui_commitItem):
         self.set_title('Loading...')
         self.create_progress_indicator()
 
-    def add_args_dict(self, args_dict):
+    def set_args_dict(self, args_dict):
         self.args_dict = args_dict
 
     def get_args_dict(self):
         return self.args_dict
 
-    def add_commit_widget(self, commit_widget):
+    def set_commit_widget(self, commit_widget):
         self.commit_widget = commit_widget
 
     def get_commit_widget(self):
@@ -123,6 +123,50 @@ class Ui_commitItemWidget(QtGui.QWidget, ui_commit_item.Ui_commitItem):
         self.set_title(file_object.get_pretty_file_name())
 
         self.set_description(self.commit_widget.description)
+
+        self.set_preview()
+
+    def set_preview(self, pix=None):
+        pixmap = None
+
+        if pix:
+            pixmap = pix
+        else:
+            icon = None
+            file_object = self.args_dict.get('files_objects')[0]
+            if file_object.is_exists() and file_object.is_previewable():
+                source_image_path = file_object.get_all_files_list(True)
+                image = Qt4Gui.QImage(0, 0, Qt4Gui.QImage.Format_ARGB32)
+                icon = None
+                if image.load(source_image_path):
+                    icon = image.scaledToWidth(120, QtCore.Qt.SmoothTransformation)
+
+            if icon:
+                pixmap = Qt4Gui.QPixmap(icon)
+
+        if pixmap:
+            if not pixmap.isNull():
+                pixmap = pixmap.scaledToHeight(64, QtCore.Qt.SmoothTransformation)
+
+                painter = Qt4Gui.QPainter()
+                pixmap_mask = Qt4Gui.QPixmap(64, 64)
+                pixmap_mask.fill(QtCore.Qt.transparent)
+                painter.begin(pixmap_mask)
+                painter.setRenderHint(Qt4Gui.QPainter.Antialiasing)
+                painter.setBrush(Qt4Gui.QBrush(Qt4Gui.QColor(0, 0, 0, 255)))
+                painter.drawRoundedRect(QtCore.QRect(0, 0, 64, 64), 4, 4)
+                painter.end()
+
+                rounded_pixmap = Qt4Gui.QPixmap(pixmap.size())
+                rounded_pixmap.fill(QtCore.Qt.transparent)
+                painter.begin(rounded_pixmap)
+                painter.setRenderHint(Qt4Gui.QPainter.Antialiasing)
+                painter.drawPixmap(QtCore.QRect((pixmap.width() - 64) / 2, 0, 64, 64), pixmap_mask)
+                painter.setCompositionMode(Qt4Gui.QPainter.CompositionMode_SourceIn)
+                painter.drawPixmap(0, 0, pixmap)
+                painter.end()
+
+                self.previewLabel.setPixmap(rounded_pixmap)
 
     def create_progress_indicator(self):
         if self.progress_wdg.isHidden():
@@ -359,13 +403,6 @@ class Ui_itemWidget(QtGui.QWidget, ui_item.Ui_item):
     def create_item_info_widget(self):
         self.item_info_widget = Ui_infoItemsWidget(self)
         self.infoHorizontalLayout.addWidget(self.item_info_widget)
-
-    def make_screenshot(self):
-        self.wid = ui_misc_classes.Ui_screenShotMakerDialog()
-        self.screenshot = self.wid.screenshot_pixmap
-        env_inst.ui_main.setHidden(True)
-        self.wid.exec_()
-        env_inst.ui_main.setHidden(False)
 
     def fill_sobject_info(self):
 
@@ -1674,8 +1711,6 @@ class Ui_snapshotItemWidget(QtGui.QWidget, ui_item_snapshot.Ui_snapshotItem):
     def get_all_versions_snapshots(self):
         process = self.sobject.process.get(self.process)
         context = process.contexts.get(self.context)
-        # print context.versions
-        # print context.versionless
         return context.versions
 
     def get_all_versions_files(self):

@@ -353,7 +353,7 @@ def get_dirs_with_naming(search_key=None, process_list=None):
     return json.dumps(dirs_dict, separators=(',', ':'))
 
 
-def get_virtual_snapshot_extended(search_key, context, files_dict, snapshot_type="file", is_revision=False, level_key=None, keep_file_name=False, version=None, update_versionless=True, ignore_keep_file_name=False, checkin_type='file'):
+def get_virtual_snapshot_extended(search_key, context, files_dict, snapshot_type="file", is_revision=False, level_key=None, keep_file_name=False, explicit_filename=None, version=None, update_versionless=True, ignore_keep_file_name=False, checkin_type='file'):
     '''creates a virtual snapshot and returns a path that this snapshot
     would generate through the naming conventions''
 
@@ -506,6 +506,11 @@ def get_virtual_snapshot_extended(search_key, context, files_dict, snapshot_type
             fl = sobject.get_name()
         elif not fl:
             fl = "unknown"
+
+        if explicit_filename:
+            keep_file_name = True
+            fl = explicit_filename
+
         for t, e, s, p in zip(val['t'], val['e'], val['s'], val['p']):
             file_object.set_value("file_name", fl)
             file_object.set_value("type", t)
@@ -530,7 +535,7 @@ def get_virtual_snapshot_extended(search_key, context, files_dict, snapshot_type
     return json.dumps(result_list, separators=(',', ':'))
 
 
-def create_snapshot_extended(search_key, context, snapshot_type=None, is_revision=False, is_latest=True, is_current=False, description=None, version=None, level_key=None, update_versionless=True, keep_file_name=True, repo_name=None, files_info=None, mode=None, create_icon=False):
+def create_snapshot_extended(search_key, context, snapshot_type=None, is_revision=False, is_latest=True, is_current=False, description=None, version=None, level_key=None, update_versionless=True, only_versionless=False, keep_file_name=True, repo_name=None, files_info=None, mode=None, create_icon=False):
     import os
     import json
     from pyasm.biz import Snapshot
@@ -585,14 +590,26 @@ def create_snapshot_extended(search_key, context, snapshot_type=None, is_revisio
         snapshot.set_value('version', version)
         snapshot.set_value('revision', revision + 1)
 
+    if only_versionless:
+        snapshot.set_value('version', -1)
+        snapshot.set_value('is_current', 0)
+        snapshot.set_value('is_latest', 1)
+        update_versionless = True
+        existing_versionless_snapshot = snapshot.get_by_sobjects([sobject], context, version=-1)
+        if existing_versionless_snapshot:
+            from tactic.ui.tools import DeleteCmd
+            cmd = DeleteCmd(sobject=existing_versionless_snapshot[0], auto_discover=True)
+            cmd.execute()
+
     snapshot.commit(triggers=True, log_transaction=True)
 
     dir_naming = None
     file_naming = None
 
-    checkin = FileAppendCheckin(snapshot.get_code(), files_info['version_files'], files_info['files_types'], keep_file_name=keep_file_name, mode=mode,
-                                source_paths=files_info['version_files'], dir_naming=dir_naming, file_naming=file_naming,
-                                checkin_type='auto', do_update_versionless=False)
+    checkin = FileAppendCheckin(snapshot.get_code(), files_info['version_files'], files_info['files_types'],
+                                keep_file_name=keep_file_name, mode=mode, source_paths=files_info['version_files'],
+                                dir_naming=dir_naming, file_naming=file_naming, checkin_type='auto',
+                                do_update_versionless=False)
     checkin.execute()
 
     files_list = checkin.get_file_objects()
@@ -602,49 +619,15 @@ def create_snapshot_extended(search_key, context, snapshot_type=None, is_revisio
         fl.set_value(name='metadata', value=json.dumps(files_info['version_metadata'][i], separators=(',', ':')))
         fl.commit()
 
-    # update_versionless = False
-
     if update_versionless:
         snapshot.update_versionless('latest', sobject=sobject, checkin_type='auto')
-        # snapshot.update_versionless(snapshot_mode='latest', sobject=sobject, checkin_type='auto')
         versionless_snapshot = snapshot.get_by_sobjects([sobject], context, version=-1)
-        # if not versionless_snapshot:
-        #     snapshot.update_versionless('latest')
-            # versionless_snapshot = [
-            #     Snapshot.create(sobject, snapshot_type=snapshot_type, context=context, description=description,
-            #                     is_revision=False, is_latest=is_latest, level_type=level_type, level_id=level_id,
-            #                     commit=False, version=-1)]
-
-        # file_objects = versionless_snapshot[0].get_all_file_objects()
-        # for file_object in file_objects:
-        #     file_object.delete(triggers=False)
-
-        # search = Search('sthpw/file')
-        # search.add_op_filters([('snapshot_code', versionless_snapshot[0].get_code())])
-        # file_objects = search.get_sobjects()
-        # for file_object in file_objects:
-        #     file_object.delete(triggers=False)
-
-        # versionless_snapshot[0].set_value('snapshot', '<snapshot/>')
         if repo_name:
             versionless_snapshot[0].set_value('repo', repo_name)
         versionless_snapshot[0].set_value('login', snapshot.get_attr_value('login'))
         versionless_snapshot[0].set_value('timestamp', snapshot.get_attr_value('timestamp'))
         versionless_snapshot[0].set_value('description', description)
         versionless_snapshot[0].commit(triggers=True, log_transaction=True)
-        #snapshot.update_versionless(snapshot_mode='latest', sobject=sobject, checkin_type='auto')
-
-        # checkin_versionless = FileAppendCheckin(versionless_snapshot[0].get_code(), files_info['versionless_files'], files_info['files_types'], keep_file_name=keep_file_name, mode=mode,
-        #                             source_paths=files_info['versionless_files'], dir_naming=dir_naming, file_naming=file_naming,
-        #                             checkin_type='strict', do_update_versionless=False)
-        # checkin_versionless.execute()
-        #
-        # versionless_files_list = checkin_versionless.get_file_objects()
-        # for i, fl_versionless in enumerate(versionless_files_list):
-        #     fl_versionless.set_value(name='st_size', value=files_info['file_sizes'][i])
-        #     fl_versionless.set_value(name='relative_dir', value=files_info['versionless_files_paths'][i])
-        #     fl_versionless.commit()
-
         search = Search('sthpw/file')
         search.add_op_filters([('snapshot_code', versionless_snapshot[0].get_code())])
         file_objects = search.get_sobjects()
@@ -660,7 +643,6 @@ def create_snapshot_extended(search_key, context, snapshot_type=None, is_revisio
 
     return str('OKEEDOKEE')
 
-# ['lib', 'client_repo', 'sandbox', 'local_repo', 'web', 'relative', 'custom_blabla']
 """
 
 # get all snapshots dicts with files dicts ver 1

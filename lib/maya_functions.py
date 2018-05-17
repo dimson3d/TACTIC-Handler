@@ -121,7 +121,7 @@ def get_maya_info_dict():
     return info_dict
 
 
-def inplace_checkin(virtual_snapshot, repo_name, update_versionless, generate_icons=True,
+def inplace_checkin(virtual_snapshot, repo_name, update_versionless, only_versionless=False, generate_icons=True,
                     selected_objects=False, ext_type='mayaAscii', setting_workspace=False):
 
     scene_name = virtual_snapshot[0][1]['versioned']['names'][0]
@@ -204,6 +204,7 @@ def inplace_checkin(virtual_snapshot, repo_name, update_versionless, generate_ic
             file_paths,
             virtual_snapshot,
             repo_name,
+            only_versionless,
             update_versionless,
             generate_icons,
             files_objects_list,

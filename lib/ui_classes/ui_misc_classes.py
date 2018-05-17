@@ -258,21 +258,26 @@ class Ui_serverPresetsEditorWidget(QtGui.QDialog):
 class Ui_screenShotMakerDialog(QtGui.QDialog):
     def __init__(self, parent=None):
         super(self.__class__, self).__init__(parent=parent)
+
+        self.__dragging = True
+        self.__drawn = False
+        self.__resizing = False
+        self.__offset_pos = None
+
+        self.create_ui()
+
+    def create_ui(self):
+
         self.setWindowTitle('Making Screenshot')
 
         self.setWindowFlags(QtCore.Qt.FramelessWindowHint | QtCore.Qt.WindowStaysOnTopHint)
+
+        # if do not work on linux, try "apt install xcompmgr" and run it, or compiz
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
-        # self.setWindowOpacity(0.5)
 
         self.setWindowModality(QtCore.Qt.ApplicationModal)
 
-        # self.setSizeGripEnabled(True)
-
-        mouse_pos = Qt4Gui.QCursor.pos()
-        self.setGeometry(mouse_pos.x()-16, mouse_pos.y()-16, 32, 32)
-
-        # self.resize(150, 150)
-        # self.move()
+        self.setGeometry(Qt4Gui.QCursor.pos().x()-12, Qt4Gui.QCursor.pos().y()-12, 24, 24)
 
         self.label_lay = QtGui.QVBoxLayout()
         self.setLayout(self.label_lay)
@@ -282,53 +287,59 @@ class Ui_screenShotMakerDialog(QtGui.QDialog):
         self.label_lay.setSpacing(0)
 
         self.bg_wd = QtGui.QLabel()
-        self.bg_wd.setStyleSheet('QLabel {padding: 0px;border: 2px dashed grey; background-color: rgba(0,0,0,25);}')
+        self.bg_wd.setAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
+        self.bg_wd.setPixmap(gf.get_icon('crosshairs', color=Qt4Gui.QColor(255, 255, 255)).pixmap(24, 24))
+        self.bg_wd.setStyleSheet(
+            'QLabel {padding: 0px;border: 0px dashed rgb(255,255,255); background-color: rgba(0,0,0,1);}')
         self.label_lay.addWidget(self.bg_wd)
+
         self.bg_wd.setMouseTracking(True)
 
         self.button_lay = QtGui.QHBoxLayout(self.bg_wd)
         self.button_lay.setContentsMargins(0, 0, 0, 0)
         self.button_lay.setSpacing(0)
 
-        self.pb = QtGui.QToolButton()
-        self.pb.setText('Take Screenshot')
-        self.pb.setAutoRaise(True)
-        # self.button_lay.addWidget(self.pb)
+        self.move_under_mouse_timer = QtCore.QTimer()
+        self.move_under_mouse_timer.setInterval(50)
+        self.move_under_mouse_timer.timeout.connect(self.move_under_mouse)
+        self.move_under_mouse_timer.start()
 
-        self.pb.clicked.connect(self.ru)
-
-        self.__dragging = False
-        self.__resizing = False
-        self.__offset_pos = None
-
-        self.single_click_timer = QtCore.QTimer()
-        self.single_click_timer.setInterval(1000)
-        self.single_click_timer.timeout.connect(self.ts)
-
-        self.create_ui()
-
-    def create_ui(self):
+        self.create_take_screenshot_button()
 
         self.setIcon()
         self.setMouseTracking(True)
-        self.installEventFilter(self)
+
+        self.controls_actions()
+
+    def controls_actions(self):
+        self.take_screenshot_button.clicked.connect(self.take_screenshot)
+
+    def create_take_screenshot_button(self):
+        self.take_screenshot_button = QtGui.QToolButton()
+        self.take_screenshot_button.setText('Take Screenshot')
+        self.button_lay.addWidget(self.take_screenshot_button)
+        self.take_screenshot_button.setHidden(True)
 
     def setIcon(self):
         icon = Qt4Gui.QIcon(':/ui_main/gliph/tactic_favicon.ico')
         self.setWindowIcon(icon)
 
-    def ts(self):
-        self.single_click_timer.stop()
+    def move_under_mouse(self):
+        self.move(Qt4Gui.QCursor.pos().x() - 12, Qt4Gui.QCursor.pos().y() - 12)
+
+    def take_screenshot(self):
+        self.hide()
         width = self.geometry().width()
         height = self.geometry().height()
         top = self.geometry().top()
         left = self.geometry().left()
-        self.screenshot_pixmap = Qt4Gui.QPixmap.grabWindow(QtGui.QApplication.desktop().winId(), left, top, width, height)
-        self.close()
-
-    def ru(self):
-        self.hide()
-        self.single_click_timer.start()
+        self.screenshot_pixmap = Qt4Gui.QPixmap.grabWindow(
+            QtGui.QApplication.desktop().winId(),
+            left,
+            top,
+            width,
+            height
+        )
 
     def dragging(self, pos):
         result_pos = pos + self.__offset_pos
@@ -339,38 +350,45 @@ class Ui_screenShotMakerDialog(QtGui.QDialog):
         self.resize(result_pos.toTuple()[0], result_pos.toTuple()[1])
 
     def mouseMoveEvent(self, event):
-        # print event.globalPos()
-        global_pos = event.globalPos()
-        self.move(global_pos.x()-16, global_pos.y()-16)
 
-        # if self.underMouse() and not self.__resizing:
-        #     if self.__dragging and self.__offset_pos:
-        #         self.dragging(event.globalPos())
-        # else:
-        #     if self.__resizing and self.__offset_pos:
-        #         self.resizing(event.globalPos())
+        if self.underMouse() and not self.__resizing:
+            if self.__dragging and self.__offset_pos:
+                self.dragging(Qt4Gui.QCursor.pos())
+        if self.__resizing and self.__offset_pos:
+            self.resizing(Qt4Gui.QCursor.pos())
+        elif self.__dragging and not self.__drawn:
+            self.move(Qt4Gui.QCursor.pos().x() - 12, Qt4Gui.QCursor.pos().y() - 12)
 
         event.accept()
 
-    # def mouseReleaseEvent(self, event):
-    #     self.__dragging = False
-    #     self.__resizing = False
-    #     event.accept()
-    #
-    # def mousePressEvent(self, event):
-    #     widget_pos = self.pos()
-    #     offset_pos = widget_pos - event.globalPos()
-    #     self.__offset_pos = offset_pos
-    #
-    #     if self.underMouse():
-    #         self.__dragging = True
-    #     else:
-    #         self.move(event.globalPos())
-    #         self.resize(0, 0)
-    #         self.__offset_pos = event.globalPos()
-    #         self.__resizing = True
-    #
-    #     event.accept()
+    def mouseReleaseEvent(self, event):
+        self.__resizing = False
+        self.__dragging = False
+        self.setMinimumSize(128, 128)
+        self.setSizeGripEnabled(True)
+        self.take_screenshot_button.setHidden(False)
+        event.accept()
+
+    def mousePressEvent(self, event):
+        widget_pos = self.pos()
+        offset_pos = widget_pos - Qt4Gui.QCursor.pos()
+        self.__offset_pos = offset_pos
+
+        if self.__drawn:
+            self.__resizing = False
+            self.__dragging = True
+        else:
+            self.move(Qt4Gui.QCursor.pos())
+            self.resize(24, 24)
+            self.__offset_pos = Qt4Gui.QCursor.pos()
+            self.__resizing = True
+            self.__dragging = False
+            self.__drawn = True
+            self.bg_wd.setStyleSheet('QLabel {padding: 0px;border: 2px dashed rgb(255,255,255); background-color: rgba(0,0,0,25);}')
+            self.bg_wd.setPixmap(None)
+            self.move_under_mouse_timer.stop()
+
+        event.accept()
 
 
 class Ui_debugLogWidget(QtGui.QDialog, ui_debuglog.Ui_DebugLog):

@@ -2,6 +2,7 @@
 # Check In Tabs interface
 
 import os
+import shutil
 from lib.side.Qt import QtWidgets as QtGui
 from lib.side.Qt import QtGui as Qt4Gui
 from lib.side.Qt import QtCore
@@ -249,15 +250,15 @@ class Ui_projectWatchFoldersWidget(QtGui.QDialog, ui_watch_folders.Ui_ProjectWat
         watch_dict = self.get_watch_dict_by_skey(sobject_item.get_search_key())
         all_folders_exists = True
         base_dirs = env_tactic.get_all_base_dirs()
+
         for key, val in base_dirs:
-            if val['value'][4]:
-                abs_path = u'{0}/{1}'.format(val['value'][0], watch_dict['path'])
-                if not os.path.exists(gf.form_path(abs_path)):
-                    # watch_dict['rep'].remove(val['value'][3])
-                    all_folders_exists = False
-                    dl.warning('Folders structure for: {0} repo is not created.'
-                               'Watch will be ignored.'.format(val['value'][1]),
-                               group_id='watch_folders_ui')
+            if val['value'][4] and val['value'][3] in watch_dict['rep']:
+                    abs_path = u'{0}/{1}'.format(val['value'][0], watch_dict['path'])
+                    if not os.path.exists(gf.form_path(abs_path)):
+                        all_folders_exists = False
+                        dl.warning('Folders structure for: {0} repo is not created.'
+                                   'Watch will be ignored.'.format(val['value'][1]),
+                                   group_id='watch_folders_ui')
 
         if all_folders_exists:
             self.watched_items.add(sobject_item)
@@ -300,6 +301,13 @@ class Ui_projectWatchFoldersWidget(QtGui.QDialog, ui_watch_folders.Ui_ProjectWat
 
                 if not os.path.exists(gf.form_path(process_abs_path)):
                     os.makedirs(gf.form_path(process_abs_path))
+
+    def delete_watch_folders_and_files(self, repos_list, sobject_item):
+        for repo in repos_list:
+            abs_path = env_tactic.get_base_dir(repo)['value'][0] + '/' + sobject_item.get_watch_folder_path()
+
+            if os.path.exists(gf.form_path(abs_path)):
+                shutil.rmtree(gf.form_path(abs_path), ignore_errors=True)
 
     def add_watch_to_watch_folders_dict(self, repos_list, sobject_item):
 
@@ -363,18 +371,41 @@ class Ui_projectWatchFoldersWidget(QtGui.QDialog, ui_watch_folders.Ui_ProjectWat
 
     def delete_watch_from_watch_folders_dict(self, sobject_item):
 
-        idx = self.get_watch_dict_by_skey(sobject_item.sobject.get_search_key())['idx']
+        buttons = (('Remove', QtGui.QMessageBox.YesRole), ('Keep', QtGui.QMessageBox.ApplyRole), ('Cancel', QtGui.QMessageBox.RejectRole))
 
-        self.watch_folders_dict['assets_names'].pop(idx)
-        self.watch_folders_dict['assets_codes'].pop(idx)
-        self.watch_folders_dict['assets_stypes'].pop(idx)
-        self.watch_folders_dict['assets_skeys'].pop(idx)
-        self.watch_folders_dict['paths'].pop(idx)
-        self.watch_folders_dict['repos'].pop(idx)
-        self.watch_folders_dict['statuses'].pop(idx)
+        reply = gf.show_message_predefined(
+            'Remove Watch Folder dirs from repos?',
+            'Watch Folder Directories and Files can also be removed from Your Repositories'
+            '<br>Remove or Keep this Dirs and Files?</br>',
+            buttons=buttons,
+            message_type='question'
+        )
 
-        sobject_item.check_watch_folder(True)
-        self.writeSettings()
+        delete_files = False
+        delete_watch_folder = False
+
+        if reply == QtGui.QMessageBox.YesRole:
+            delete_files = True
+            delete_watch_folder = True
+        elif reply == QtGui.QMessageBox.ApplyRole:
+            delete_files = False
+            delete_watch_folder = True
+
+        if delete_watch_folder:
+            idx = self.get_watch_dict_by_skey(sobject_item.sobject.get_search_key())['idx']
+
+            self.watch_folders_dict['assets_names'].pop(idx)
+            self.watch_folders_dict['assets_codes'].pop(idx)
+            self.watch_folders_dict['assets_stypes'].pop(idx)
+            self.watch_folders_dict['assets_skeys'].pop(idx)
+            self.watch_folders_dict['paths'].pop(idx)
+            repos = self.watch_folders_dict['repos'].pop(idx)
+            self.watch_folders_dict['statuses'].pop(idx)
+
+            sobject_item.check_watch_folder(True)
+            self.writeSettings()
+            if delete_files:
+                self.delete_watch_folders_and_files(repos, sobject_item)
 
     def create_repo_editor_ui(self, sobject_item, mode='create'):
 

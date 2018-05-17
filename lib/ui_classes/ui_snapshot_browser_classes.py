@@ -615,6 +615,9 @@ class Ui_snapshotBrowserWidget(QtGui.QWidget, ui_snapshot_browser.Ui_snapshotBro
             is_versionless = self.item_widget.is_versionless()
             if is_versionless:
                 self.snapshots = self.item_widget.get_all_versions_snapshots()
+                if not self.snapshots:
+                    self.snapshots = self.item_widget.get_snapshot()
+                    is_versionless = False
             else:
                 self.snapshots = self.item_widget.get_snapshot()
 

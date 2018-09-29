@@ -6,7 +6,7 @@ CURRENT_PATH = '/home/krivospickiy_a/MEGA/Work/CGProjects/tacticbase_dev/TACTIC-
 import sys
 if CURRENT_PATH not in sys.path:
     sys.path.append(CURRENT_PATH)
-import lib.ui_classes.ui_maya_dock as main
+import thlib.ui_classes.ui_maya_dock as main
 reload(main)
 
 main.init_env(CURRENT_PATH)

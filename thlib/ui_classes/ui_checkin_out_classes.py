@@ -209,6 +209,109 @@ class Ui_descriptionWidget(QtGui.QWidget, ui_description_widget.Ui_descriptionWi
         self.edit_button.setHidden(False)
 
 
+class Ui_columnsViewerWidget(QtGui.QWidget):
+    def __init__(self, project, stype, parent=None):
+        super(self.__class__, self).__init__(parent=parent)
+
+        self.stype = stype
+        self.project = project
+        self.item = None
+
+        self.create_ui()
+
+    def create_ui(self):
+
+        self.create_layout()
+        self.create_tabbed_widget()
+
+    def controls_actions(self):
+        pass
+
+    def set_item(self, item):
+        self.item = item
+        if self.item:
+            self.customize_with_item()
+        else:
+            self.customize_without_item()
+
+    def customize_with_item(self):
+        self.columns_tab_widget.clear()
+
+        table_columns = []
+        stype = self.item.stype
+
+        for i in stype.get_definition('table'):
+            table_columns.append(i.get('name'))
+
+        exclude_columns = ['__search_type__', '__search_key__', '__tasks_count__', '__notes_count__', '__snapshots__']
+
+        if self.item.type == 'snapshot':
+            snapshot_obj = self.item.get_snapshot()
+            if snapshot_obj:
+                snapshot = snapshot_obj.get_snapshot()
+                for column, val in snapshot.items():
+                    if column not in exclude_columns:
+                        if column in table_columns:
+                            text_edit = QtGui.QTextEdit()
+                            text_edit.setText(unicode(val))
+
+                            column_title = None
+                            for j in stype.get_definition('definition'):
+                                if j.get('name') == column:
+                                    column_title = j.get('title')
+
+                            if not column_title:
+                                column_title = gf.prettify_text(column)
+
+                            self.columns_tab_widget.addTab(text_edit, column_title)
+
+        if self.item.type == 'sobject':
+            sobject_obj = self.item.get_sobject()
+            if sobject_obj:
+                sobject = sobject_obj.get_info()
+                for column, val in sobject.items():
+                    if column not in exclude_columns:
+                        if column in table_columns:
+                            text_edit = QtGui.QTextEdit()
+                            text_edit.setText(unicode(val))
+
+                            column_title = None
+                            for j in stype.get_definition('definition'):
+                                if j.get('name') == column:
+                                    column_title = j.get('title')
+
+                            if not column_title:
+                                column_title = gf.prettify_text(column)
+
+                            self.columns_tab_widget.addTab(text_edit, column_title)
+
+    def customize_without_item(self):
+        self.columns_tab_widget.clear()
+
+    def create_layout(self):
+        self.main_layout = QtGui.QVBoxLayout()
+        self.main_layout.setSpacing(0)
+        self.main_layout.setContentsMargins(0, 0, 0, 0)
+
+        self.setLayout(self.main_layout)
+
+    def create_tabbed_widget(self):
+        self.columns_tab_widget = QtGui.QTabWidget(self)
+
+        self.columns_tab_widget.setMovable(True)
+        self.columns_tab_widget.setTabsClosable(True)
+        self.columns_tab_widget.setObjectName("notes_tab_widget")
+        self.columns_tab_widget.setStyleSheet(
+            '#notes_tab_widget > QTabBar::tab {background: transparent;border: 2px solid transparent;'
+            'border-top-left-radius: 3px;border-top-right-radius: 3px;border-bottom-left-radius: 0px;border-bottom-right-radius: 0px;padding: 4px;}'
+            '#notes_tab_widget > QTabBar::tab:selected, #notes_tab_widget > QTabBar::tab:hover {'
+            'background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 rgba(255, 255, 255, 48), stop: 1 rgba(255, 255, 255, 32));}'
+            '#notes_tab_widget > QTabBar::tab:selected {border-color: transparent;}'
+            '#notes_tab_widget > QTabBar::tab:!selected {margin-top: 0px;}')
+
+        self.main_layout.addWidget(self.columns_tab_widget)
+
+
 class Ui_checkInOutOptionsWidget(QtGui.QWidget, ui_checkin_out_options_dialog.Ui_checkinOutOptions):
     def __init__(self, stype, project, parent=None):
         super(self.__class__, self).__init__(parent=parent)
@@ -580,7 +683,11 @@ class Ui_checkInOutWidget(QtGui.QMainWindow):
         self.tab_widget = tab_widget
         self.tab_label = None
 
+        self.notes_dock = None
+        self.checkin_options_dock = None
+
         self.process_tree_widget = None
+        self.drop_plate_dock = None
         self.naming_editor_widget = None
 
         self.relates_to = 'checkin_out'
@@ -615,6 +722,7 @@ class Ui_checkInOutWidget(QtGui.QMainWindow):
         self.create_drop_plate_dock()
         self.create_snapshot_browser_dock()
         self.create_description_dock()
+        self.create_columns_viewer_dock()
         # self.create_search_options_dock()
         self.create_advanced_search_widget()
         self.create_checkin_options_dock()
@@ -663,7 +771,7 @@ class Ui_checkInOutWidget(QtGui.QMainWindow):
         if not self.drop_plate_dock.widget():
             self.drop_plate_dock.setWidget(env_inst.get_check_tree(self.project.get_code(), 'checkin_out_instanced_widgets', 'drop_plate_dock'))
         if not self.checkin_options_dock.widget():
-           self.checkin_options_dock.setWidget(env_inst.get_check_tree(self.project.get_code(), 'checkin_out_instanced_widgets', 'checkin_options_dock'))
+            self.checkin_options_dock.setWidget(env_inst.get_check_tree(self.project.get_code(), 'checkin_out_instanced_widgets', 'checkin_options_dock'))
 
     @gf.catch_error
     def create_search_widget(self):
@@ -743,6 +851,22 @@ class Ui_checkInOutWidget(QtGui.QMainWindow):
 
         self.addDockWidget(QtCore.Qt.RightDockWidgetArea, self.description_dock)
 
+    @gf.catch_error
+    def create_columns_viewer_dock(self):
+        dl.log('Creating Columns Viewer Dock', group_id=self.stype.get_code())
+
+        self.columns_viewer_widget = Ui_columnsViewerWidget(self.project, self.stype, parent=self)
+
+        self.columns_viewer_dock = QtGui.QDockWidget(self)
+        self.columns_viewer_dock.setWidget(self.columns_viewer_widget)
+        self.columns_viewer_dock.setWindowTitle('Columns Viewer')
+        self.columns_viewer_dock.setObjectName('columns_viewer_dock')
+
+        self.columns_viewer_dock.setFeatures(
+            QtGui.QDockWidget.DockWidgetMovable | QtGui.QDockWidget.DockWidgetClosable)
+
+        self.addDockWidget(QtCore.Qt.BottomDockWidgetArea, self.columns_viewer_dock)
+
     # @gf.catch_error
     # def create_search_options_dock(self):
     #     dl.log('Creating Search Options Dock', group_id=self.stype.get_code())
@@ -810,6 +934,9 @@ class Ui_checkInOutWidget(QtGui.QMainWindow):
 
     def get_description_widget(self):
         return self.description_widget
+
+    def get_columns_viewer_widget(self):
+        return self.columns_viewer_widget
 
     def get_drop_plate_widget(self):
         return self.drop_plate_widget
@@ -1525,6 +1652,8 @@ class Ui_checkInOutWidget(QtGui.QMainWindow):
 
         if files_objects is None:
             files_objects = self.drop_plate_widget.get_selected_items()
+
+        print(checkin_type)
         if checkin_type is None:
             checkin_type = self.fast_controls_tool_bar_widget.get_checkin_mode()
         if keep_file_name is None:
@@ -1674,29 +1803,30 @@ class Ui_checkInOutWidget(QtGui.QMainWindow):
         if env_mode.get_mode() == 'maya':
             mf.wrap_export_selected_options(self.project.get_code(), 'checkin_out', self.stype.get_code())
 
-    def fast_save(self):
-        print 'SAVING FAST'
+    def fast_save(self, **kargs):
+        print 'SAVING FAST', kargs
         skey = mf.get_skey_from_scene()
 
         print skey
-        skey_dict = tc.parce_skey(skey, True)
+        if skey:
+            skey_dict = tc.parce_skey(skey, True)
 
-        saved = self.checkin_from_maya(
-            search_key=skey_dict['search_key'],
-            context=skey_dict['context'],
-            description=None,
-            save_revision=False,
-            snapshot_version=None,
-            selected_objects=False,
-        )
+            saved = self.checkin_from_maya(
+                search_key=skey_dict['search_key'],
+                context=skey_dict['context'],
+                description=None,
+                # save_revision=False,
+                # snapshot_version=None,
+                # selected_objects=False,
+            )
 
-        if saved:
-            print 'ALL GOOD ;)'
-            current_widget = self.get_current_tree_widget()
-            # self.description_widget.set_item(None)
-            # self.fast_controls_tool_bar_widget.set_item(None)
-            current_widget.update_current_items_trees()
-            # self.drop_plate_widget.fromDropListCheckBox.setChecked(False)
+            if saved:
+                print 'ALL GOOD ;)'
+                # current_widget = self.get_current_tree_widget()
+                # self.description_widget.set_item(None)
+                # self.fast_controls_tool_bar_widget.set_item(None)
+                # current_widget.update_current_items_trees()
+                # self.drop_plate_widget.fromDropListCheckBox.setChecked(False)
 
     def save_revision_confirm(self, save_revision, selected_objects):
 
@@ -1735,6 +1865,7 @@ class Ui_checkInOutWidget(QtGui.QMainWindow):
 
     @gf.catch_error
     def save_file(self, selected_objects=None, save_revision=False, update_snapshot=False):
+
         current_results_widget = self.get_current_results_widget()
         current_tree_widget_item = current_results_widget.get_current_tree_widget_item()
 
@@ -1806,9 +1937,16 @@ class Ui_checkInOutWidget(QtGui.QMainWindow):
                             files_objects=[file_object],
                         )
 
+    # def checkin_standalone(self):
+    #
+    #     pass
+    #
+    # def checkin_maya(self):
+    
     def refresh_results(self):
 
         self.description_widget.set_item(None)
+        self.columns_viewer_widget.set_item(None)
         self.fast_controls_tool_bar_widget.set_item(None)
 
         # current_widget = self.get_current_tree_widget()
@@ -1821,7 +1959,9 @@ class Ui_checkInOutWidget(QtGui.QMainWindow):
     def get_update_versionless(self):
 
         current_results_widget = self.get_current_results_widget()
-        current_tree_widget_item = current_results_widget.get_current_tree_widget_item()
+        current_tree_widget_item = None
+        if current_results_widget:
+            current_tree_widget_item = current_results_widget.get_current_tree_widget_item()
 
         if not current_tree_widget_item:
             return True

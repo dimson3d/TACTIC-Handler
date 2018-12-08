@@ -50,7 +50,15 @@ class Ui_DockMain(MayaQWidgetDockableMixin, QtGui.QMainWindow):
         # if self.docked:
         #     self.set_docked()
         # else:
-            self.set_undocked()
+        self.set_undocked()
+
+        self.register_marking_menu()
+
+    @staticmethod
+    def register_marking_menu():
+
+        # mf.initShortcut()
+        pass
 
     def toggle_docking(self):
         if self.toggle_dock:
@@ -65,6 +73,8 @@ class Ui_DockMain(MayaQWidgetDockableMixin, QtGui.QMainWindow):
         self.move(self.dock_pos)
 
     def handle_hotkeys(self):
+        print('NOW HANDLING HOTKEYS')
+
         if self.hotkeys_dict:
             project_code = self.hotkeys_dict.get('project')
             control_tab = self.hotkeys_dict.get('control_tab')
@@ -74,6 +84,7 @@ class Ui_DockMain(MayaQWidgetDockableMixin, QtGui.QMainWindow):
                 env_inst.ui_main.create_project_dock(project_code, close_project=False, raise_tab=True)
 
             if control_tab:
+                self.control_tab_from_hotkey()
                 if control_tab in ['checkin_out']:
                     if project_code:
                         current_control = env_inst.get_control_tab(project_code, tab_code=control_tab)
@@ -81,11 +92,30 @@ class Ui_DockMain(MayaQWidgetDockableMixin, QtGui.QMainWindow):
                         current_control = env_inst.get_control_tab(tab_code=control_tab)
                     if current_control:
                         current_control.raise_tab()
-                        if action:
-                            if action == 'save':
-                                current_control.fast_save()
 
+                    if action:
+                        self.action_from_hotkey(action, current_control)
+
+            # clearing hotkeys
             self.hotkeys_dict = None
+
+    def control_tab_from_hotkey(self):
+        print('YUP')
+
+    def action_from_hotkey(self, actions, control):
+        possible_actions = {
+            'save': False,
+            'open': False,
+            'selected_objects': False,
+            'selected_item': False,
+            'silent': False
+        }
+        for action in actions.split('/'):
+            if action in possible_actions.keys():
+                possible_actions[action] = True
+
+        if possible_actions['save']:
+            control.fast_save(**possible_actions)
 
     def set_docked(self):
         # if self.status_bar:
@@ -213,7 +243,7 @@ def create_ui(ping_worker, hotkeys=None):
 
     if ping_worker.is_failed():
         env_mode.set_offline()
-        main_tab = Ui_DockMain()
+        main_tab = Ui_DockMain(hotkeys=hotkeys)
         gf.error_handle(ping_worker.get_error_tuple())
     else:
         env_mode.set_online()

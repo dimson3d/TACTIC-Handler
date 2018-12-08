@@ -907,7 +907,8 @@ class Ui_itemWidget(QtGui.QWidget, ui_item.Ui_item):
                         current_pipeline,
                         process
                     )
-                    sub_processes_list.extend(child_pipeline.get_all_processes_names())
+                    if child_pipeline:
+                        sub_processes_list.extend(child_pipeline.get_all_processes_names())
 
             if include_hierarchy:
                 processes_list.extend(sub_processes_list)
@@ -1071,7 +1072,6 @@ class Ui_processItemWidget(QtGui.QWidget, ui_item_process.Ui_processItem):
 
         self.search_widget = None
         self.relates_to = 'checkin_out'
-
 
         # self.item_info[
         #     'description'] = 'This is {0} process item, there is no description, better click on Notes button'.format(

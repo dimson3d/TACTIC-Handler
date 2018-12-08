@@ -146,12 +146,26 @@ class Ui_projectWatchFoldersWidget(QtGui.QDialog, ui_watch_folders.Ui_ProjectWat
         match_template = gf.MatchTemplate(['$FILENAME.$EXT'])
         files_objects_dict = match_template.get_files_objects([event.src_path])
 
+        stypes = self.project.get_stypes()
+        current_stype = stypes.get(skey_dict['pipeline_code'])
+        pipelines = current_stype.get_pipeline()
+        print(skey_dict['pipeline_code'])
+        current_pipeline = pipelines.get(skey_dict['pipeline_code'])
+        print(current_pipeline)
+        current_process = current_pipeline.get_process(context)
+        print(current_pipeline.process)
+        print(current_process)
+
+        checkin_mode = None
+        if current_process:
+            checkin_mode = current_process.get('checkin_mode')
+
         checkin_widget.checkin_file_objects(
             search_key=search_key,
             context=context,
             description=description,
             files_objects=files_objects_dict.get('file'),
-            checkin_type='file',
+            checkin_type=checkin_mode,
             keep_file_name=False
         )
 
@@ -861,10 +875,10 @@ class Ui_checkInOutTabWidget(QtGui.QWidget, checkin_out_tabs.Ui_sObjTabs):
             for tab in self.all_search_tabs:
                 tab.set_settings_from_dict(current_settings, apply_checkin_options=False, apply_search_options=False)
 
-    def fast_save(self):
+    def fast_save(self, **kargs):
         current_tab = self.get_current_tab_widget()
 
-        current_tab.fast_save()
+        current_tab.fast_save(**kargs)
 
     def get_current_tab_widget(self):
         current_widget = self.sObjTabWidget.currentWidget()

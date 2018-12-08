@@ -277,7 +277,7 @@ class Ui_mainTabs(QtGui.QWidget, ui_main_tabs.Ui_mainTabsForm):
         if run_thread:
 
             def get_stypes_agent():
-                return self.project.query_stypes()
+                return self.project.get_stypes()
 
             stypes_cache = None
             if stypes_cache:

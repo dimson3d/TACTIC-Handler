@@ -227,18 +227,10 @@ class IconicFont(QObject):
 
             # Verify that vendorized fonts are not corrupt
             if not SYSTEM_FONTS:
-                md5_hashes = {'fontawesome4.7-webfont.ttf':
+                md5_hashes = {'fontawesome-webfont.ttf':
                               'b06871f281fee6b241d60582ae9369b9',
-                              'fontawesome5-regular-webfont.ttf':
-                              '1001ae931cec5dbf1686ae04d50d2130',
-                              'fontawesome5-solid-webfont.ttf':
-                              '264db4086a7cf660e91bcff419ced8b8',
-                              'fontawesome5-brands-webfont.ttf':
-                              '947b9537bc0fecc8130d48eb753495a1',
                               'elusiveicons-webfont.ttf':
-                              '207966b04c032d5b873fd595a211582e',
-                              'materialdesignicons-webfont.ttf':
-                              '64b96825d49e070ea87c7100f2db3f46'}
+                              '207966b04c032d5b873fd595a211582e'}
                 ttf_hash = md5_hashes.get(ttf_filename, None)
                 if ttf_hash is not None:
                     hasher = hashlib.md5()
@@ -357,8 +349,6 @@ class IconicFont(QObject):
         """Return a QFont corresponding to the given prefix and size."""
         font = QFont(self.fontname[prefix])
         font.setPixelSize(size)
-        if prefix[-1] == 's':  # solid style
-            font.setStyleName('Solid')
         return font
 
     def set_custom_icon(self, name, painter):

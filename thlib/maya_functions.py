@@ -3,6 +3,8 @@
 
 import os
 from thlib.side.Qt import QtWidgets as QtGui
+from thlib.side.Qt import QtGui as Qt4Gui
+from thlib.side.Qt import QtCore
 
 import maya.OpenMayaUI as omui
 import maya.cmds as cmds
@@ -58,8 +60,9 @@ def reference_scene(file_path):
 
 
 def get_skey_from_scene():
-    skey = cmds.getAttr('defaultObjectSet.tacticHandler_skey')
-    return skey
+    if cmds.attributeQuery('tacticHandler_skey', node='defaultObjectSet', exists=True):
+        skey = cmds.getAttr('defaultObjectSet.tacticHandler_skey')
+        return skey
 
 
 def export_selected(project_code, tab_code, wdg_code):
@@ -270,3 +273,136 @@ def set_workspace(dir_path, all_process):
     # print('Setting Workspace: {0}'.format(dir_path))
     mel.eval('setProject "{0}";'.format(dir_path))
     mel.eval('projectWindow;np_editCurrentProjectCallback;')
+
+
+# def UpdateCustomMarkingMenu(menu=None, parent=None, remove=False, update=True):
+#     if menu is None:
+#         menu = 'CustomPopupMenu'
+#
+#     if not remove:
+#         if parent is None:
+#             parent = cmds.playblast(activeEditor=True)
+#
+#         if not cmds.popupMenu(menu, exists=True):
+#             print('Create menu')
+#             cmds.popupMenu(
+#                 menu,
+#                 markingMenu=True,
+#                 parent=parent,
+#                 button=2,
+#                 ctl=True,
+#                 postMenuCommand=UpdateCustomMarkingMenu,
+#             )
+#         else:
+#             print('Update menu')
+#             cmds.popupMenu(
+#                 menu,
+#                 edit=True,
+#                 parent=parent,
+#             )
+#
+#         if update:
+#             cmds.popupMenu(
+#                 menu,
+#                 edit=True,
+#                 deleteAllItems=True,
+#             )
+#
+#             cmds.menuItem(parent=menu, radialPosition='SE')
+#             cmds.menuItem(parent=menu, radialPosition='E')
+#             cmds.menuItem(parent=menu, radialPosition='N')
+#
+#     else:
+#         if cmds.popupMenu(menu, exists=True):
+#             cmds.deleteUI(menu)
+
+from functools import partial
+
+MENU_NAME = "markingMenu"
+
+
+class markingMenu():
+    '''The main class, which encapsulates everything we need to build and rebuild our marking menu. All
+    that is done in the constructor, so all we need to do in order to build/update our marking menu is
+    to initialize this class.'''
+
+    def __init__(self):
+
+        self._removeOld()
+        self._build()
+
+    def _build(self):
+        '''Creates the marking menu context and calls the _buildMarkingMenu() method to populate it with all items.'''
+        menu = cmds.popupMenu(MENU_NAME, mm=1, aob=1, sh=0, p="viewPanes", pmo=1, pmc=self._buildMarkingMenu)
+
+    def _removeOld(self):
+        '''Checks if there is a marking menu with the given name and if so deletes it to prepare for creating a new one.
+        We do this in order to be able to easily update our marking menus.'''
+        if cmds.popupMenu(MENU_NAME, ex=1):
+            cmds.deleteUI(MENU_NAME)
+
+    def _buildMarkingMenu(self, menu, parent):
+        '''This is where all the elements of the marking menu our built.'''
+
+        # Radial positioned
+        cmds.menuItem(p=menu, l="South West Button", rp="SW", c="print 'SouthWest'")
+        cmds.menuItem(p=menu, l="South East Button", rp="SE", c=exampleFunction)
+        cmds.menuItem(p=menu, l="North East Button", rp="NE", c="cmds.circle()")
+
+        subMenu = cmds.menuItem(p=menu, l="North Sub Menu", rp="N", subMenu=1)
+        cmds.menuItem(p=subMenu, l="North Sub Menu Item 1")
+        cmds.menuItem(p=subMenu, l="North Sub Menu Item 2")
+
+        cmds.menuItem(p=menu, l="South", rp="S", c="print 'South'")
+        cmds.menuItem(p=menu, ob=1, c="print 'South with Options'")
+
+        # List
+        cmds.menuItem(p=menu, l="First menu item")
+        cmds.menuItem(p=menu, l="Second menu item")
+        cmds.menuItem(p=menu, l="Third menu item")
+        cmds.menuItem(p=menu, l="Create poly cube", c="cmds.polyCube()")
+
+        # Rebuild
+        cmds.menuItem(p=menu, l="Rebuild Marking Menu", c=rebuildMarkingMenu)
+
+# markingMenu()
+
+
+def exampleFunction(*args):
+    '''Example function to demonstrate how to pass functions to menuItems'''
+    print "example function"
+
+
+def rebuildMarkingMenu(*args):
+    '''This function assumes that this file has been imported in the userSetup.py
+    and all it does is reload the module and initialize the markingMenu class which
+    rebuilds our marking menu'''
+    cmds.evalDeferred("""
+reload(markingMenu)
+markingMenu.markingMenu()
+""")
+
+
+def shortcutActivated(shortcut):
+
+    print(shortcut)
+    # markingMenu()
+    name = 'markingMenu'
+    print('MARKING')
+
+    popup = cmds.popupMenu(name, b=1, sh=1, alt=0, ctl=0, aob=1, p="viewPanes", mm=1)
+
+    # if "scriptEditor" in cmds.getPanel(wf=1):
+    #     cmds.scriptEditorInfo(clearHistory=1)
+    # else:
+    #     shortcut.setEnabled(0)
+    #
+    #     e = Qt4Gui.QKeyEvent(QtCore.QEvent.KeyPress, QtCore.Qt.Key_H, QtCore.Qt.CTRL)
+    #     QtCore.QCoreApplication.postEvent(get_maya_window(), e)
+    #     cmds.evalDeferred(partial(shortcut.setEnabled, 1))
+
+
+def initShortcut():
+    shortcut = QtGui.QShortcut(Qt4Gui.QKeySequence(QtCore.Qt.CTRL + QtCore.Qt.Key_H), get_maya_window())
+    shortcut.setContext(QtCore.Qt.ApplicationShortcut)
+    shortcut.activated.connect(partial(shortcutActivated, shortcut))

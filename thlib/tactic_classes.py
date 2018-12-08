@@ -315,7 +315,13 @@ class Project(object):
 
         code = tq.prepare_serverside_script(tq.query_search_types_extended, kwargs, return_dict=True)
 
+        # import time
+        # start = time.time()
+
         result = server_start(project=kwargs['project_code']).execute_python_script('', kwargs=code)
+
+        # print time.time() - start
+
         stypes = json.loads(result['info']['spt_ret_val'])
 
         schema = stypes.get('schema')
@@ -334,8 +340,8 @@ class Project(object):
         else:
             prj_schema = None
 
-        if not (pipelines or schema):
-            return None
+        if not pipelines or not prj_schema:
+            return []
         else:
             return self.get_all_search_types(stypes, pipelines, prj_schema)
 
@@ -461,6 +467,20 @@ class SType(object):
 
     def get_columns_info(self):
         return self.info['column_info']
+
+    def get_definition(self, definition='table', processed=True):
+        if processed:
+
+            definition_bs = BeautifulSoup(self.info['definition'].get(definition), 'html.parser')
+
+            all_elements = []
+            for element in definition_bs.find_all(name='element'):
+                all_elements.append(element.attrs)
+
+            return all_elements
+
+        else:
+            return self.info['definition'].get(definition)
 
 
 class Schema(object):
@@ -619,8 +639,8 @@ class SObject(object):
         self.snapshots = {}
 
         # Info Vars
-        self.tasks_count = {}
-        self.notes_count = {}
+        self.tasks_count = {'__total__': 0}
+        self.notes_count = {'publish': 0}
 
     # Snapshots by search code
     def query_snapshots(self, s_code, process=None, user=None):

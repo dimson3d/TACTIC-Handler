@@ -676,7 +676,7 @@ class commitWidget(QtGui.QWidget):
 
     def create_versionless_widget(self):
 
-        self.collapse_wdg_vls = ui_misc_classes.Ui_collapsableWidget(state=True)
+        self.collapse_wdg_vls = ui_misc_classes.Ui_collapsableWidget(state=False)
         layout_files = QtGui.QVBoxLayout()
         self.collapse_wdg_vls.setLayout(layout_files)
         self.collapse_wdg_vls.setText('Hide Versionless Files')
@@ -690,7 +690,7 @@ class commitWidget(QtGui.QWidget):
         self.treeWidget_vls.headerItem().setText(0, "File")
         self.treeWidget_vls.headerItem().setText(1, "Path")
         self.treeWidget_vls.setStyleSheet('QTreeView::item {padding: 2px;}')
-        # self.treeWidget_vls.setMinimumHeight(150)
+        self.treeWidget_vls.setTextElideMode(QtCore.Qt.ElideLeft)
 
         layout_files.addWidget(self.treeWidget_vls)
 
@@ -698,7 +698,7 @@ class commitWidget(QtGui.QWidget):
 
     def create_versions_widget(self):
 
-        self.collapse_wdg_vers = ui_misc_classes.Ui_collapsableWidget(state=True)
+        self.collapse_wdg_vers = ui_misc_classes.Ui_collapsableWidget(state=False)
         layout_files = QtGui.QVBoxLayout()
         self.collapse_wdg_vers.setLayout(layout_files)
         self.collapse_wdg_vers.setText('Hide Versions Files')
@@ -712,7 +712,7 @@ class commitWidget(QtGui.QWidget):
         self.treeWidget_vers.headerItem().setText(0, "File")
         self.treeWidget_vers.headerItem().setText(1, "Path")
         self.treeWidget_vers.setStyleSheet('QTreeView::item {padding: 2px;}')
-        # self.treeWidget_vers.setMinimumHeight(150)
+        self.treeWidget_vers.setTextElideMode(QtCore.Qt.ElideLeft)
 
         layout_files.addWidget(self.treeWidget_vers)
 
@@ -728,7 +728,6 @@ class commitWidget(QtGui.QWidget):
                 item.setText(1, full_path)
                 self.treeWidget_vls.addTopLevelItem(item)
         self.treeWidget_vls.resizeColumnToContents(0)
-        self.treeWidget_vls.resizeColumnToContents(1)
 
     def fill_versions_widget(self, paths):
         self.treeWidget_vers.clear()
@@ -740,7 +739,6 @@ class commitWidget(QtGui.QWidget):
                 item.setText(1, full_path)
                 self.treeWidget_vers.addTopLevelItem(item)
         self.treeWidget_vers.resizeColumnToContents(0)
-        self.treeWidget_vers.resizeColumnToContents(1)
 
     def create_description_widget(self):
 
@@ -763,8 +761,8 @@ class commitWidget(QtGui.QWidget):
         layout_files.addWidget(self.description_widget)
         self.main_layout.addWidget(self.collapse_wdg_descr, 8, 0, 1, 2)
 
-        if not self.description:
-            self.collapse_wdg_descr.setHidden(True)
+        # if not self.description:
+            # self.collapse_wdg_descr.setHidden(True)
 
     def get_only_context(self):
 
@@ -831,7 +829,7 @@ class Ui_commitQueueWidget(QtGui.QMainWindow, ui_commit_queue.Ui_commitQueue):
         else:
             self.setWindowTitle('Global Commit Queue')
 
-        self.setWindowFlags(QtCore.Qt.Dialog | QtCore.Qt.WindowStaysOnTopHint)
+        self.setWindowFlags(QtCore.Qt.Window | QtCore.Qt.WindowStaysOnTopHint)
 
         server_thread_pool = QtCore.QThreadPool()
         server_thread_pool.setMaxThreadCount(1)

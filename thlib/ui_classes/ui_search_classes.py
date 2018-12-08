@@ -352,604 +352,6 @@ class Ui_processFilterDialog(QtGui.QDialog):
         event.accept()
 
 
-# class Ui_searchResultsWidget(QtGui.QWidget):
-#     def __init__(self, parent=None):
-#         super(self.__class__, self).__init__(parent=parent)
-#
-#         self.create_ui()
-#
-#         self.stype = self.search_widget.stype
-#         self.project = self.search_widget.project
-#
-#         self.tab_name = self.stype.info['code']
-#
-#         self.current_project = self.project.info['code']
-#         self.current_namespace = self.project.info['type']
-#
-#         self.sep_versions = True
-#
-#         self.create_ui_search_results()
-#
-#     def query_sobjects(self, sobjects_list):
-#
-#         def get_sobjects_agent():
-#             """ If we have traceback, it points us here"""
-#             return tc.get_sobjects(
-#                 process_list=[''],
-#                 sobjects_list=sobjects_list,
-#                 project_code=self.project.info['code']
-#             )
-#
-#         server_thread_pool = QtCore.QThreadPool()
-#         server_thread_pool.setMaxThreadCount(env_tactic.max_threads())
-#         env_inst.set_thread_pool(server_thread_pool, 'server_query/server_thread_pool')
-#
-#         query_sobjects_worker = gf.get_thread_worker(
-#             get_sobjects_agent,
-#             thread_pool=env_inst.get_thread_pool('server_query/server_thread_pool'),
-#             result_func=self.fill_items,
-#             error_func=gf.error_handle
-#         )
-#         query_sobjects_worker.start()
-#
-#     def query_names(self, query):
-#
-#         def assets_query_new_agent():
-#             """ If we have traceback, it points us here"""
-#             return tc.assets_query_new(
-#                 query=query,
-#                 stype=self.stype.info['code'],
-#                 project=self.project.info['code'],
-#             )
-#
-#         server_thread_pool = QtCore.QThreadPool()
-#         server_thread_pool.setMaxThreadCount(env_tactic.max_threads())
-#         env_inst.set_thread_pool(server_thread_pool, 'server_query/server_thread_pool')
-#
-#         query_names_worker = gf.get_thread_worker(
-#             assets_query_new_agent,
-#             thread_pool=env_inst.get_thread_pool('server_query/server_thread_pool'),
-#             result_func=self.assets_names,
-#             error_func=gf.error_handle
-#         )
-#         query_names_worker.start()
-#
-#     def create_ui(self):
-#
-#         self.create_results_tab_widget()
-#
-#         self.resultsLayout = QtGui.QVBoxLayout()
-#         self.resultsLayout.setSpacing(0)
-#         self.resultsLayout.setContentsMargins(0, 0, 0, 0)
-#         self.setLayout(self.resultsLayout)
-#
-#         self.resultsLayout.addWidget(self.resultsTabWidget)
-#
-#     def create_results_tab_widget(self):
-#         self.resultsTabWidget = QtGui.QTabWidget()
-#         self.resultsTabWidget.setMovable(True)
-#         self.resultsTabWidget.setTabsClosable(True)
-#         self.resultsTabWidget.setObjectName("resultsTabWidget")
-#
-#         self.resultsTabWidget.setStyleSheet(
-#             '#resultsTabWidget > QTabBar::tab {background: transparent;border: 2px solid transparent;'
-#             'border-top-left-radius: 3px;border-top-right-radius: 3px;border-bottom-left-radius: 0px;border-bottom-right-radius: 0px;padding: 4px;}'
-#             '#resultsTabWidget > QTabBar::tab:selected, #resultsTabWidget > QTabBar::tab:hover {'
-#             'background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 rgba(255, 255, 255, 48), stop: 1 rgba(255, 255, 255, 32));}'
-#             '#resultsTabWidget > QTabBar::tab:selected {border-color: transparent;}'
-#             '#resultsTabWidget > QTabBar::tab:!selected {margin-top: 0px;}')
-#
-#     def create_ui_search_results(self):
-#
-#         self.create_new_tab_button()
-#         # self.add_tab()
-#         self.controls_actions()
-#
-#         self.readSettings()
-#
-#     def controls_actions(self):
-#         self.add_new_tab_button.clicked.connect(self.add_tab)
-#         self.refresh_tab_button.clicked.connect(lambda: self.refresh_current_results(True))
-#         self.resultsTabWidget.tabCloseRequested.connect(self.close_tab)
-#
-#     def get_current_widget(self):
-#         return self.resultsTabWidget.currentWidget()
-#
-#     def get_current_tab_text(self):
-#         return self.resultsTabWidget.tabText(self.resultsTabWidget.currentIndex())
-#
-#     def get_progress_bar(self):
-#         current_widget = self.get_current_widget()
-#         return current_widget.progress_bar
-#
-#     def set_current_tab_text(self, text):
-#         self.resultsTabWidget.setTabText(
-#             self.resultsTabWidget.currentIndex(),
-#             text
-#         )
-#
-#     def get_process_list(self):
-#         # this only needed to get all snapshots for all processes, when query them
-#
-#         # get process list from pipeline
-#         if self.stype.pipeline:
-#             process = []
-#             for pipe in self.stype.pipeline.values():
-#                 process.extend(pipe.process.keys())
-#         else:
-#             process = []
-#
-#         # Add builting process
-#         process.extend((['icon', 'attachment', 'publish']))
-#
-#         all_ignored_process = []
-#         # Filter ignored process
-#         ignore_list = self.search_widget.get_process_ignore_list()
-#
-#         if ignore_list:
-#             for val in ignore_list['processes'].itervalues():
-#                 all_ignored_process.extend(val)
-#         if all_ignored_process:
-#             ready_process_list = [x for x in process if x not in all_ignored_process]
-#         else:
-#             ready_process_list = process
-#
-#         if ready_process_list:
-#             return set(ready_process_list)
-#         else:
-#             return []
-#
-#     @gf.catch_error
-#     def refresh_current_results(self, force_full_update=False):
-#         current_widget = self.search_widget.get_current_tree_widget()
-#         current_widget.update_current_items_trees(force_full_update=force_full_update)
-#
-#     def close_all_tabs(self):
-#
-#         # while self.resultsTabWidget.count() == 0:
-#         #     self.resultsTabWidget.count() - 1
-#         #     print self.resultsTabWidget.tabBar().removeTab()
-#             # QtGui.QTabBar
-#         self.resultsTabWidget.clear()
-#         self.add_tab()
-#
-#         # print self.resultsTabWidget.count(), 'FIRST COUNT'
-#         # for i in range(self.resultsTabWidget.count()+1):
-#         #     # print 'delete ', i
-#         #     # print self.resultsTabWidget.widget(i).close()
-#         #     # self.resultsTabWidget.removeTab(i)
-#         #     print self.resultsTabWidget.tabBar().removeTab(i)
-#         #     # self.close_tab(tab_index=i, self_close=False)
-#         #
-#         # print self.resultsTabWidget.count(), 'END COUNT'
-#         # self.add_tab()
-#
-#     def do_search(self, search_query=None, search_by=None, new_tab=False):
-#         if not search_query:
-#             search_query = self.search_widget.get_search_query_text()
-#         if new_tab:
-#             self.add_tab()
-#         self.set_current_tab_text(search_query)
-#
-#         self.add_items_to_results(search_query, search_by=search_by)
-#
-#     def add_items_to_results(self, query=None, refresh=False, search_by=None, revert=False):
-#         """
-#         Adding queried items to results tree widget
-#         :param query:
-#         :param refresh:
-#         :param revert:
-#         :param search_by:
-#         :return:
-#         """
-#
-#         current_widget = self.get_current_widget()
-#
-#         if refresh:
-#             current_widget.info['state'] = gf.tree_state(current_widget.resultsTreeWidget, {})
-#             # from pprint import pprint
-#             # pprint(current_widget.info['state'])
-#         elif not revert:
-#             current_widget.info['state'] = None
-#         # else:
-#         #     current_widget.info['state'] =
-#
-#         if not search_by:
-#             search_by = 0
-#             # search_by = self.search_widget.search_mode_state()
-#
-#         query_tuple = query, search_by
-#
-#         if query:
-#             # Run first thread
-#             self.query_names(query=query_tuple)
-#
-#     @gf.catch_error
-#     def assets_names(self, names):
-#
-#             # print(names.is_failed())
-#         # names = tc.treat_result(self.names_query_thread)
-#
-#         # if names.isFailed():
-#         #     if names.result == QtGui.QMessageBox.ApplyRole:
-#         #         names.run()
-#         #         self.assets_names()
-#         #     elif names.result == QtGui.QMessageBox.ActionRole:
-#         #         env_inst.offline = True
-#         #         env_inst.ui_main.open_config_dialog()
-#
-#         # if not names.isFailed():
-#             # pretty name for new single tab
-#             if len(names) == 1:
-#                 tab_name = names[0].get('name')
-#
-#                 if tab_name:
-#                     self.set_current_tab_text(tab_name)
-#
-#             self.query_sobjects(names)
-#
-#             # if not self.sobjects_query_thread.isRunning():
-#             #     self.sobjects_query_thread.kwargs = dict(process_list=[''], sobjects_list=names.result, project_code=self.project.info['code'])
-#             #     self.sobjects_query_thread.routine = tc.get_sobjects
-#             #     self.sobjects_query_thread.start(QtCore.QThread.NormalPriority)
-#             #
-#             # pl = names.result
-#             #
-#             # def group(lst, n):
-#             #     return zip(*[lst[i::n] for i in range(n)])
-#             #
-#             # for p in group(pl, 5):
-#             #     threaded = tc.ServerThread(self)
-#             #
-#             #     threaded.kwargs = dict(process_list=self.get_process_list(), sobjects_list=p, project_code=self.search_widget.current_project)
-#             #     threaded.routine = tc.get_sobjects
-#             #     # threaded.msleep(10)
-#             #     threaded.start()
-#             #     threaded.setPriority(QtCore.QThread.NormalPriority)
-#             #
-#             #     # threaded.finished.connect(lambda : self.prnt(threaded))
-#
-#     @gf.catch_error
-#     def fill_items(self, result):
-#
-#         print result
-#
-#         self.sobjects = result
-#
-#         current_widget = self.get_current_widget()
-#         current_tree_widget = current_widget.resultsTreeWidget
-#
-#         gf.recursive_close_tree_item_widgets(current_tree_widget)
-#
-#         current_tree_widget.clear()
-#
-#         current_widget.progress_bar.setVisible(True)
-#         total_sobjects = len(self.sobjects.keys()) - 1
-#
-#         for p, sobject in enumerate(self.sobjects.itervalues()):
-#             item_info = {
-#                 'relates_to': 'checkin_out',
-#                 'is_expanded': False,
-#                 'sep_versions': self.sep_versions,
-#             }
-#
-#             gf.add_sobject_item(
-#                 current_tree_widget,
-#                 self.search_widget,
-#                 sobject,
-#                 self.stype,
-#                 item_info,
-#                 ignore_dict=self.search_widget.get_process_ignore_list(),
-#             )
-#             if total_sobjects:
-#                 current_widget.progress_bar.setValue(int(p * 100 / total_sobjects))
-#
-#         # l2 = QtGui.QVBoxLayout()
-#         # current_tree_widget.viewport().setLayout(l2)
-#         # l2.addWidget(QtGui.QPushButton('Load More'))
-#
-#         self.gridLayout = QtGui.QGridLayout(current_tree_widget.viewport())
-#         self.gridLayout.setContentsMargins(0, 0, 0, 0)
-#         spacerItem = QtGui.QSpacerItem(0, 0, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
-#         self.gridLayout.addItem(spacerItem, 1, 0, 1, 1)
-#         self.toolButton = QtGui.QToolButton(current_tree_widget.viewport())
-#         self.toolButton.setToolButtonStyle(QtCore.Qt.ToolButtonTextOnly)
-#         self.toolButton.setAutoRaise(True)
-#         self.toolButton.setText('Load More (10)')
-#         l = current_tree_widget.viewport().layout()
-#
-#         l.addWidget(self.toolButton)
-#
-#         self.toolButton.show()
-#         # self.toolButton.clicked.connect()
-#         # self.toolButton.move(50, 900)
-#         # scroll.setMaximum(maximum + 20)
-#
-#         scroll = current_tree_widget.verticalScrollBar()
-#         # scroll = QtGui.QScrollBar()
-#         # current_tree_widget.setVerticalScrollBar(scroll)
-#         # print current_tree_widget.verticalScrollBar()
-#         # vieport = QtGui.QAbstractScrollArea()
-#
-#         # maximum = scroll.maximum()
-#         # x = self.toolButton.pos().x()
-#         # y = self.toolButton.pos().y()
-#         # self.max_changed = False
-#
-#         def asd(va):
-#             # current_tree_widget.viewport().updateGeometry()
-#             # print self.toolButton.pos()
-#             # print current_tree_widget.viewport().height()
-#             # print current_tree_widget.viewport().width()
-#             # QtGui.QWidget.height()
-#             x = self.toolButton.pos().x()
-#             # y = self.toolButton.pos().y()
-#             # print scroll.maximum()
-#             # scroll.setMaximum(scroll.maximum() + self.toolButton.height())
-#
-#             self.toolButton.move(x, current_tree_widget.viewport().height() - self.toolButton.height())
-#             # QtGui.QWidget.update()
-#
-#         scroll.valueChanged.connect(asd)
-#
-#         # scroll.rangeChanged.connect(asd)
-#         # scroll.sliderMoved.connect(asd)
-#         # current_tree_widget.viewport().setMinimumHeight(50)
-#         # current_tree_widget.setViewport(current_tree_widget.viewport())
-#         # QtGui.QScrollArea.widget()
-#         # current_tree_widget.setViewportMargins(50,50,50,50)
-#         # print current_tree_widget.cornerWidget()
-#         # QtGui.QWidget.setMinimumWidth()
-#         # self.toolButton.show()
-#         # self.toolButton.move(50, 50)
-#         # self.toolButton.installEventFilter(self.toolButton)
-#         # self.toolButton.eventFilter = self.tb_paintEvent
-#
-#         # self.toolButton.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
-#         # self.gridLayout.addWidget(self.toolButton, 2, 0, 1, 1)
-#         # current_tree_widget.viewport().scro
-#         # QtGui.QWidget.scroll()
-#
-#         if current_widget.info['state']:
-#             gf.tree_state_revert(current_tree_widget, current_widget.info['state'])
-#
-#         current_widget.progress_bar.setVisible(False)
-#
-#     def update_item_tree(self, item=None, force_full_update=False):
-#         current_widget = self.get_current_widget()
-#         current_tree_widget = current_widget.resultsTreeWidget
-#         current_widget.info['state'] = gf.tree_state(current_tree_widget, {})
-#         current_widget.progress_bar.setVisible(True)
-#
-#         if force_full_update:
-#             # if we did not selected any tree item, we update whole tree forced
-#             self.add_items_to_results(self.get_current_tab_text(), refresh=True)
-#             if item:
-#                 # but if we have tree item, try to update versions
-#                 current_widget.update_versions_items(item)
-#         elif item:
-#             if item.type == 'sobject':
-#                 self.add_items_to_results(self.get_current_tab_text(), refresh=True)
-#                 current_widget.update_versions_items(item)
-#             else:
-#                 item.update_items()
-#                 current_widget.update_versions_items(item)
-#
-#         if current_widget.info['state']:
-#             gf.tree_state_revert(current_tree_widget, current_widget.info['state'])
-#         current_widget.progress_bar.setVisible(False)
-#
-#     def add_to_history_list(self, tab_title, widget):
-#         #TODO remove cleared widgets to resolve memory leak
-#         if tab_title:
-#             filter_process = QtGui.QAction(tab_title, self.history_tab_button)
-#             filter_process.triggered.connect(lambda: self.restore_tab_from_history(filter_process, widget))
-#             filter_process.setData(widget)
-#
-#             try:
-#                 if self.clear_history:
-#                     pass
-#             except:
-#                 self.clear_history = QtGui.QAction('Clear History', self.history_tab_button)
-#                 self.clear_history.triggered.connect(self.clear_tabs_history)
-#                 self.history_tab_button.addAction(self.clear_history)
-#                 self.sep = QtGui.QAction('', self.history_tab_button)
-#                 self.sep.setSeparator(True)
-#                 self.history_tab_button.addAction(self.sep)
-#
-#             self.history_tab_button.addAction(filter_process)
-#
-#     def clear_tabs_history(self):
-#         for action in self.history_tab_button.actions():
-#             results_wdg = action.data()
-#             if results_wdg:
-#                 results_wdg.clear_tree_widgets()
-#                 results_wdg.close()
-#                 results_wdg.deleteLater()
-#             self.history_tab_button.removeAction(action)
-#
-#         del self.clear_history
-#
-#     def restore_tab_from_history(self, action, widget):
-#
-#         self.resultsTabWidget.addTab(widget, action.text())
-#         self.resultsTabWidget.setCurrentWidget(widget)
-#         self.history_tab_button.removeAction(action)
-#
-#     @gf.catch_error
-#     def close_tab(self, tab_index):
-#         if self.resultsTabWidget.count() > 1:
-#             self.add_to_history_list(self.resultsTabWidget.tabText(tab_index), self.resultsTabWidget.widget(tab_index))
-#             self.resultsTabWidget.removeTab(tab_index)
-#
-#     def create_new_tab_button(self):
-#         self.add_new_tab_button = QtGui.QToolButton()
-#         self.add_new_tab_button.setAutoRaise(True)
-#         self.add_new_tab_button.setMinimumWidth(20)
-#         self.add_new_tab_button.setMinimumHeight(20)
-#         self.add_new_tab_button.setIcon(gf.get_icon('plus'))
-#
-#         self.history_tab_button = QtGui.QToolButton()
-#         self.history_tab_button.setAutoRaise(True)
-#         self.history_tab_button.setMinimumWidth(20)
-#         self.history_tab_button.setMinimumHeight(20)
-#         self.history_tab_button.setPopupMode(QtGui.QToolButton.InstantPopup)
-#         self.history_tab_button.setIcon(gf.get_icon('history'))
-#
-#         self.refresh_tab_button = QtGui.QToolButton()
-#         self.refresh_tab_button.setAutoRaise(True)
-#         self.refresh_tab_button.setMinimumWidth(20)
-#         self.refresh_tab_button.setMinimumHeight(20)
-#         self.refresh_tab_button.setIcon(gf.get_icon('refresh'))
-#
-#         # effect = QtGui.QGraphicsColorizeEffect(self.refresh_tab_button)
-#         # self.animation = QtCore.QPropertyAnimation(effect, "color", self)
-#         # self.animation.setDuration(500)
-#         # self.animation.setStartValue(Qt4Gui.QColor(0, 0, 0, 0))
-#         # self.animation.setEndValue(Qt4Gui.QColor(49, 140, 72, 128))
-#         # self.animation.start()
-#         # self.refresh_tab_button.setGraphicsEffect(effect)
-#
-#         self.right_buttons_layout = QtGui.QHBoxLayout()
-#         self.right_buttons_layout.setContentsMargins(0, 0, 0, 0)
-#         self.right_buttons_layout.setSpacing(2)
-#         self.right_buttons_widget= QtGui.QWidget(self)
-#         self.right_buttons_widget.setLayout(self.right_buttons_layout)
-#         self.right_buttons_layout.addWidget(self.refresh_tab_button)
-#         self.right_buttons_layout.addWidget(self.history_tab_button)
-#
-#         self.resultsTabWidget.setCornerWidget(self.right_buttons_widget, QtCore.Qt.TopRightCorner)
-#         self.resultsTabWidget.setCornerWidget(self.add_new_tab_button, QtCore.Qt.TopLeftCorner)
-#
-#     @gf.catch_error
-#     def add_tab(self, search_title='', state=None, options=None, search_column=None, search_text=None):
-#         info = {
-#             'title': search_title,
-#             'state': state,
-#             'options': options,
-#             'search_column': search_column,
-#             'search_text': search_text,
-#         }
-#
-#         search_results_tree = Ui_resultsFormWidget(search_widget=self.search_widget, info=info, parent=self)
-#         self.sep_versions = search_results_tree.get_is_separate_versions()
-#         self.resultsTabWidget.addTab(search_results_tree, search_title)
-#         self.resultsTabWidget.setCurrentWidget(search_results_tree)
-#
-#         return search_results_tree.resultsTreeWidget
-#
-#     def set_settings_from_dict(self, settings_dict=None):
-#
-#         if not settings_dict:
-#             settings_dict = {
-#                 'default_repo': 0,
-#                 'createMayaDirsCheckBox': False,
-#                 'askBeforeSaveCheckBox': True,
-#                 'createPlayblastCheckBox': True,
-#                 'updateVersionlessCheckBox': True,
-#             }
-#
-#         self.repositoryComboBox.setCurrentIndex(int(settings_dict.get('default_repo')))
-#         self.createMayaDirsCheckBox.setChecked(bool(int(settings_dict.get('createMayaDirsCheckBox'))))
-#         self.askBeforeSaveCheckBox.setChecked(bool(int(settings_dict.get('askBeforeSaveCheckBox'))))
-#         self.createPlayblastCheckBox.setChecked(bool(int(settings_dict.get('createPlayblastCheckBox'))))
-#         self.updateVersionlessCheckBox.setChecked(bool(int(settings_dict.get('updateVersionlessCheckBox'))))
-#
-#     def get_settings_dict(self):
-#
-#         settings_dict = {
-#             'default_repo': int(self.repositoryComboBox.currentIndex()),
-#             'createMayaDirsCheckBox': int(self.createMayaDirsCheckBox.isChecked()),
-#             'askBeforeSaveCheckBox': int(self.askBeforeSaveCheckBox.isChecked()),
-#             'createPlayblastCheckBox': int(self.createPlayblastCheckBox.isChecked()),
-#             'updateVersionlessCheckBox': int(self.updateVersionlessCheckBox.isChecked()),
-#         }
-#
-#         return settings_dict
-#
-#     def set_search_cache(self, search_cache):
-#         search_cache = gf.hex_to_html(search_cache)
-#
-#         if search_cache:
-#             search_cache = gf.from_json(search_cache, use_ast=True)
-#
-#             tab_added = 0
-#             for tab, state, options in zip(search_cache[0], search_cache[1], search_cache[3]):
-#                 self.add_tab(tab, state, options)
-#                 tab_added += 1
-#             if not tab_added:
-#                 self.add_tab()
-#             self.resultsTabWidget.setCurrentIndex(int(search_cache[2]))
-#         else:
-#             self.add_tab()
-#
-#     def get_search_cache(self):
-#
-#         tab_names_list = []
-#         tab_state_list = []
-#         tab_options_list = []
-#
-#         # FIXME bug when saving tabs when there is empty tab...
-#
-#         for tab in range(self.resultsTabWidget.count()):
-#             current_state = gf.tree_state(self.resultsTabWidget.widget(tab).resultsTreeWidget, {})
-#             old_state = self.resultsTabWidget.widget(tab).info['state']
-#
-#             if current_state:
-#                 tab_state_list.append(current_state)
-#             elif old_state:
-#                 tab_state_list.append(old_state)
-#
-#             tab_names_list.append(self.resultsTabWidget.tabText(tab))
-#             tab_options_list.append('self.search_widget.searchOptionsGroupBox.get_search_options()')  # THIS IS TEMPORARY
-#
-#         search_cache = (tab_names_list, tab_state_list, self.resultsTabWidget.currentIndex(), tab_options_list)
-#
-#         return gf.html_to_hex(gf.to_json(search_cache, use_ast=True))
-#
-#     def readSettings(self):
-#         """
-#         Reading Settings
-#         """
-#         tab_name = self.tab_name.split('/')
-#         group_path = 'ui_search/{0}/{1}/{2}'.format(
-#             self.current_namespace,
-#             self.current_project,
-#             tab_name[1])
-#
-#         self.set_search_cache(
-#             env_read_config(
-#                 filename='search_cache',
-#                 unique_id=group_path,
-#                 long_abs_path=True
-#             )
-#         )
-#
-#     def writeSettings(self):
-#         """
-#         Writing Settings
-#         """
-#         tab_name = self.tab_name.split('/')
-#         group_path = 'ui_search/{0}/{1}/{2}'.format(
-#             self.current_namespace,
-#             self.current_project,
-#             tab_name[1]
-#         )
-#
-#         env_write_config(
-#             self.get_search_cache(),
-#             filename='search_cache',
-#             unique_id=group_path,
-#             long_abs_path=True
-#         )
-#
-#     def closeEvent(self, event):
-#
-#         event.accept()
-#
-#         self.writeSettings()
-
-
 class Ui_searchWidget(QtGui.QWidget, search_widget.Ui_searchWidget):
     def __init__(self, stype, project, parent=None):
         super(self.__class__, self).__init__(parent=parent)
@@ -974,7 +376,7 @@ class Ui_searchWidget(QtGui.QWidget, search_widget.Ui_searchWidget):
 
     def controls_actions(self):
         self.searchLineEdit.returnPressed.connect(self.do_search)
-        self.searchLineEdit.mousePressEvent = self.searchLineSingleClick
+        # self.searchLineEdit.pre
 
         self.add_new_tab_button.clicked.connect(self.add_tab)
         self.refresh_tab_button.clicked.connect(self.update_current_search_results)
@@ -984,10 +386,8 @@ class Ui_searchWidget(QtGui.QWidget, search_widget.Ui_searchWidget):
     def create_search_line_edit(self):
         self.searchLineEdit = ui_misc_classes.SuggestedLineEdit(self.stype, self.project, 'search')
         self.searchLineEdit.setObjectName("searchLineEdit")
+        self.searchLineEdit.setToolTip('Enter Your search query here')
         self.searchWidgetGridLayout.addWidget(self.searchLineEdit, 0, 0, 1, 1)
-
-    def searchLineSingleClick(self, event):
-        self.searchLineEdit.selectAll()
 
     def create_search_results_widget(self):
 
@@ -1000,7 +400,7 @@ class Ui_searchWidget(QtGui.QWidget, search_widget.Ui_searchWidget):
 
         self.create_results_tab_widget()
         self.resultsLayout.addWidget(self.resultsTabWidget)
-        self.create_new_tab_button()
+        self.create_tool_buttons()
 
         self.searchWidgetGridLayout.addWidget(self.search_results_widget, 2, 0, 1, 3)
         self.searchWidgetGridLayout.setRowStretch(2, 1)
@@ -1020,25 +420,116 @@ class Ui_searchWidget(QtGui.QWidget, search_widget.Ui_searchWidget):
             '#resultsTabWidget > QTabBar::tab:selected {border-color: transparent;}'
             '#resultsTabWidget > QTabBar::tab:!selected {margin-top: 0px;}')
 
-    def create_new_tab_button(self):
+    def create_tool_buttons(self):
         self.add_new_tab_button = QtGui.QToolButton()
         self.add_new_tab_button.setAutoRaise(True)
         self.add_new_tab_button.setMinimumWidth(20)
         self.add_new_tab_button.setMinimumHeight(20)
-        self.add_new_tab_button.setIcon(gf.get_icon('plus'))
+        self.add_new_tab_button.setIcon(gf.get_icon('plus', icons_set='mdi', scale_factor=1.3))
+        self.add_new_tab_button.setToolTip('Add new Search Tab')
 
         self.history_tab_button = QtGui.QToolButton()
         self.history_tab_button.setAutoRaise(True)
         self.history_tab_button.setMinimumWidth(20)
         self.history_tab_button.setMinimumHeight(20)
         self.history_tab_button.setPopupMode(QtGui.QToolButton.InstantPopup)
-        self.history_tab_button.setIcon(gf.get_icon('history'))
+        self.history_tab_button.setIcon(gf.get_icon('history', icons_set='mdi', scale_factor=1.3))
+        self.history_tab_button.setToolTip('History of closed Search Results')
 
         self.refresh_tab_button = QtGui.QToolButton()
         self.refresh_tab_button.setAutoRaise(True)
         self.refresh_tab_button.setMinimumWidth(20)
         self.refresh_tab_button.setMinimumHeight(20)
-        self.refresh_tab_button.setIcon(gf.get_icon('refresh'))
+        self.refresh_tab_button.setIcon(gf.get_icon('refresh', icons_set='mdi', scale_factor=1.3))
+        self.refresh_tab_button.setToolTip('Refresh current Results')
+
+        self.right_buttons_layout = QtGui.QHBoxLayout()
+        self.right_buttons_layout.setContentsMargins(0, 0, 0, 0)
+        self.right_buttons_layout.setSpacing(2)
+
+        self.l = QtGui.QHBoxLayout()
+        self.l.setSpacing(0)
+        self.l.setContentsMargins(0, 0, 0, 0)
+
+        spacer = QtGui.QSpacerItem(500, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Maximum)
+        self.l.addItem(spacer)
+
+        self.b = QtGui.QPushButton('asd')
+        self.b.setMaximumWidth(20)
+        self.b.setMaximumHeight(20)
+        # self.b.setStyleSheet('QPushButton {margin-right: 5px;padding: 6px;}')
+        # self.l.addWidget(self.b)
+
+        self.resultsTabWidget.tabBar().setTabButton(1, QtGui.QTabBar.RightSide, self.b)
+        # QtGui.QTabBar.styleSheet()
+
+
+        self.resultsTabWidget.tabBar().setLayout(self.l)
+
+        self.right_buttons_widget = QtGui.QWidget(self)
+        self.right_buttons_widget.setLayout(self.right_buttons_layout)
+
+        self.change_view_tab_button = QtGui.QToolButton()
+        self.change_view_tab_button.setAutoRaise(True)
+        self.change_view_tab_button.setMinimumWidth(20)
+        self.change_view_tab_button.setMinimumHeight(20)
+        self.change_view_tab_button.setPopupMode(QtGui.QToolButton.InstantPopup)
+        self.change_view_tab_button.setIcon(gf.get_icon('view-list', icons_set='mdi', scale_factor=1.3))
+        self.change_view_tab_button.setToolTip('Change Search Results View Style')
+
+        self.items_view_action = QtGui.QMenu('Items View', self.change_view_tab_button)
+        self.items_view_action.setIcon(gf.get_icon('view-list', icons_set='mdi', scale_factor=1.3))
+        # self.items_view_action.triggered.connect(self.clear_tabs_history)
+        self.split_view_horizontal_action = QtGui.QAction('Splitted Horizontal View', self.change_view_tab_button)
+        self.split_view_horizontal_action.setIcon(gf.get_icon('view-sequential', icons_set='mdi', scale_factor=1.3))
+        self.split_view_horizontal_action.triggered.connect(lambda: self.toggle_current_view('splitted_horizontal'))
+
+        self.split_view_vertical_action = QtGui.QAction('Splitted Vertical View', self.change_view_tab_button)
+        self.split_view_vertical_action.setIcon(gf.get_icon('view-parallel', icons_set='mdi', scale_factor=1.3))
+        self.split_view_vertical_action.triggered.connect(lambda: self.toggle_current_view('splitted_vertical'))
+
+        self.continious_view_action = QtGui.QAction('Continious View', self.change_view_tab_button)
+        self.continious_view_action.setIcon(gf.get_icon('view-dashboard-variant', icons_set='mdi', scale_factor=1.3))
+        self.continious_view_action.triggered.connect(lambda: self.toggle_current_view('continious'))
+
+        self.items_view_action.addAction(self.split_view_horizontal_action)
+        self.items_view_action.addAction(self.split_view_vertical_action)
+        self.items_view_action.addAction(self.continious_view_action)
+        # print self.get_current_results_widget()
+
+        self.tiles_view_action = QtGui.QAction('Tiles View', self.change_view_tab_button)
+        self.tiles_view_action.setIcon(gf.get_icon('view-grid', icons_set='mdi', scale_factor=1.3))
+        self.tiles_view_action.triggered.connect(lambda: self.toggle_current_view('tiles'))
+
+        self.change_view_tab_button.addAction(self.items_view_action.menuAction())
+        self.change_view_tab_button.addAction(self.tiles_view_action)
+
+        self.additional_collapsable_toolbar = ui_misc_classes.Ui_horizontalCollapsableWidget()
+        self.additional_buttons_layout = QtGui.QHBoxLayout()
+        self.additional_buttons_layout.setSpacing(0)
+        self.additional_buttons_layout.setContentsMargins(0, 0, 0, 0)
+        self.additional_collapsable_toolbar.setLayout(self.additional_buttons_layout)
+        self.additional_collapsable_toolbar.setCollapsed(True)
+
+        self.additional_buttons_layout.addWidget(self.change_view_tab_button)
+
+        self.main_collapsable_toolbar = ui_misc_classes.Ui_horizontalCollapsableWidget()
+        self.main_buttons_layout = QtGui.QHBoxLayout()
+        self.main_buttons_layout.setSpacing(0)
+        self.main_buttons_layout.setContentsMargins(0, 0, 0, 0)
+        self.main_collapsable_toolbar.setLayout(self.main_buttons_layout)
+        self.main_collapsable_toolbar.setCollapsed(False)
+
+        self.main_buttons_layout.addWidget(self.refresh_tab_button)
+        self.main_buttons_layout.addWidget(self.history_tab_button)
+
+        # self.expandingLayout.addWidget(self.collapsable_toolbar)
+
+        self.right_buttons_layout.addWidget(self.additional_collapsable_toolbar)
+        self.right_buttons_layout.addWidget(self.main_collapsable_toolbar)
+
+        # self.right_buttons_layout.addWidget(self.refresh_tab_button)
+        # self.right_buttons_layout.addWidget(self.history_tab_button)
 
         # effect = QtGui.QGraphicsColorizeEffect(self.refresh_tab_button)
         # self.animation = QtCore.QPropertyAnimation(effect, "color", self)
@@ -1048,16 +539,13 @@ class Ui_searchWidget(QtGui.QWidget, search_widget.Ui_searchWidget):
         # self.animation.start()
         # self.refresh_tab_button.setGraphicsEffect(effect)
 
-        self.right_buttons_layout = QtGui.QHBoxLayout()
-        self.right_buttons_layout.setContentsMargins(0, 0, 0, 0)
-        self.right_buttons_layout.setSpacing(2)
-        self.right_buttons_widget= QtGui.QWidget(self)
-        self.right_buttons_widget.setLayout(self.right_buttons_layout)
-        self.right_buttons_layout.addWidget(self.refresh_tab_button)
-        self.right_buttons_layout.addWidget(self.history_tab_button)
-
         self.resultsTabWidget.setCornerWidget(self.right_buttons_widget, QtCore.Qt.TopRightCorner)
         self.resultsTabWidget.setCornerWidget(self.add_new_tab_button, QtCore.Qt.TopLeftCorner)
+
+    def toggle_current_view(self, view='splitted_vertical'):
+
+        current_results_widget = self.get_current_results_widget()
+        current_results_widget.toggle_results_view(view)
 
     @gf.catch_error
     def add_tab(self, search_title='', filters=[], state=None, offset=0, limit=None, reverting=False):
@@ -1298,14 +786,14 @@ class Ui_searchWidget(QtGui.QWidget, search_widget.Ui_searchWidget):
             }
 
         self.collapsable_toolbar.setCollapsed(settings_dict['collapsable_toolbar'])
-        self.searchLineEdit.setText(settings_dict['searchLineEdit_text'])
+        self.searchLineEdit.setEditText(settings_dict['searchLineEdit_text'])
         self.set_search_cache(settings_dict.get('search_cache'), settings_dict.get('resultsTabWidget_current_index'))
 
     def get_settings_dict(self):
 
         settings_dict = {
             'collapsable_toolbar': int(self.collapsable_toolbar.isCollapsed()),
-            'searchLineEdit_text': unicode(self.searchLineEdit.text()),
+            'searchLineEdit_text': unicode(self.searchLineEdit.currentText()),
             'search_cache': self.get_search_cache(),
             'resultsTabWidget_current_index': self.resultsTabWidget.currentIndex(),
         }
@@ -1354,7 +842,7 @@ class Ui_filterWidget(QtGui.QWidget):
 
         self.column_combo_box.currentIndexChanged.connect(self.changed_column_combo_box_index)
         self.match_combo_box.currentIndexChanged.connect(self.changed_match_by_combo_box_index)
-        self.query_line_edit.textChanged.connect(self.changed_line_edit_text)
+        # self.query_line_edit.textChanged.connect(self.changed_line_edit_text)
         self.query_line_edit.returnPressed.connect(self.edited_line_edit_text)
 
     def get_checkin_out_widget(self):
@@ -1394,7 +882,7 @@ class Ui_filterWidget(QtGui.QWidget):
         self.main_layout.addWidget(self.match_combo_box)
 
     def valid_filter(self):
-        query_tex = self.query_line_edit.text()
+        query_tex = self.query_line_edit.currentText()
         if query_tex.strip() and self.enabled_check_box.isChecked():
             return True
 
@@ -1434,7 +922,7 @@ class Ui_filterWidget(QtGui.QWidget):
         self.main_layout.addWidget(self.query_line_edit)
 
     def changed_line_edit_text(self):
-        text = self.query_line_edit.text()
+        text = self.query_line_edit.currentText()
         self.filter = (self.filter[0], self.filter[1], text)
 
     def edited_line_edit_text(self):
@@ -1485,7 +973,7 @@ class Ui_filterWidget(QtGui.QWidget):
         self.match_combo_box.setCurrentIndex(index)
 
     def set_query_line_edit_value(self, query_text):
-        self.query_line_edit.setText(query_text)
+        self.query_line_edit.setEditText(query_text)
 
     def change_enable_state(self, state):
         if bool(state):
@@ -1975,12 +1463,13 @@ class Ui_navigationWidget(QtGui.QWidget):
 
             self.resizeEvent = self.main_widget_resizeEvent
 
-        #     if self.display_limit >= self.total_query_count:
-        #         self.setHidden(True)
-        #     else:
-        #         self.setHidden(False)
-        # else:
-        #     self.setHidden(True)
+            # Checking if we need nav bar
+            if self.total_query_count <= 0:
+                self.setHidden(True)
+            else:
+                self.setHidden(False)
+        else:
+            self.setHidden(True)
 
     def main_widget_resizeEvent(self, event):
         self.gen_pages_line(self.display_limit, self.total_query_count, widget_width=self.width())
@@ -2023,7 +1512,7 @@ class Ui_navigationWidget(QtGui.QWidget):
                 else:
                     page_line = i+1
 
-                final_page_line += '<a href="{1}:{2}" style="color:#bfbfbf"> {0} </a>'.format(
+                final_page_line += '<a href="{1}:{2}" style="color:#bfbfbf">{0}</a> '.format(
                     page_line,
                     pages[i]['page_number'],
                     pages[i]['offset']
@@ -2031,8 +1520,8 @@ class Ui_navigationWidget(QtGui.QWidget):
 
             first_items = self.display_offset+1
             second_items = self.display_limit + self.display_offset
-            if second_items > self.total_count:
-                second_items = self.total_count
+            if second_items > total_count:
+                second_items = total_count
 
             # links for last page
             if pages[-1]['page_number'] > last_page:
@@ -2045,7 +1534,7 @@ class Ui_navigationWidget(QtGui.QWidget):
                 '<span style=" font-size:11pt; color:#828282;">Showing {0} - {1} of {2}<br>{3}</span>'.format(
                     first_items,
                     second_items,
-                    self.total_count,
+                    total_count,
                     final_page_line
                 ))
 
@@ -2106,6 +1595,10 @@ class Ui_resultsFormWidget(QtGui.QWidget, ui_search_results_tree.Ui_resultsForm)
             limit=limit,
             offset=offset,
         )
+
+    def toggle_results_view(self, view='separate_vertical'):
+
+        print 'toggling', view
 
     def update_search_results(self, limit=None, offset=None,  refresh=False):
         # collecting new filters, limit, offset, etc...
@@ -2407,6 +1900,8 @@ class Ui_resultsFormWidget(QtGui.QWidget, ui_search_results_tree.Ui_resultsForm)
         self.bottom_navigataion_widget = Ui_navigationWidget(project=self.project, stype=self.stype)
         self.bottom_navigataion_widget.refresh_search.connect(self.update_search_results)
 
+        self.bottom_navigataion_widget.setHidden(True)
+
         self.resultsLayout.addWidget(self.bottom_navigataion_widget)
 
         # self.gridLayout.addWidget(self.bottom_navigataion_widget)
@@ -2455,8 +1950,10 @@ class Ui_resultsFormWidget(QtGui.QWidget, ui_search_results_tree.Ui_resultsForm)
 
         checkin_options_widget = checkin_out_widget.get_checkin_options_widget_config()
 
-        current_widget = checkin_out_widget.get_current_tree_widget()
-        current_tree_widget_item = current_widget.get_current_tree_widget_item()
+        # current_widget = checkin_out_widget.get_current_tree_widget()
+        # current_tree_widget_item = current_widget.get_current_tree_widget_item()
+
+        current_tree_widget_item = self.get_current_tree_widget_item()
 
         if modifiers == QtCore.Qt.ShiftModifier and checkin_options_widget.doubleClickOpenCheckBox.isChecked():
             if current_tree_widget_item.type == 'snapshot':
@@ -2600,11 +2097,14 @@ class Ui_resultsFormWidget(QtGui.QWidget, ui_search_results_tree.Ui_resultsForm)
 
         description_widget = checkin_out_widget.get_description_widget()
 
+        columns_viewer_widget = checkin_out_widget.get_columns_viewer_widget()
+
         fast_controls_widget = checkin_out_widget.get_fast_controls_widget()
 
         if nested_item.type in ['sobject', 'snapshot', 'process']:
             fast_controls_widget.set_item(nested_item)
             description_widget.set_item(nested_item)
+            columns_viewer_widget.set_item(nested_item)
         else:
             fast_controls_widget.set_item(None)
             description_widget.set_item(None)

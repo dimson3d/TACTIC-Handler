@@ -265,11 +265,23 @@ def query_search_types_extended(project_code, namespace):
 
     stypes = prj.get_search_types()
 
+    from pyasm.widget import WidgetConfigView
+
     all_stypes = []
     for stype in stypes:
         stype_dict = get_sobject_dict(stype)
         stype_dict['column_info'] = stype.get_column_info(stype.get_code())
         all_stypes.append(stype_dict)
+
+        # getting views for columns viewer
+        views = ['table', 'definition']
+        definition = {}
+        for view in views:
+            config_view = WidgetConfigView.get_by_search_type(stype, view)
+            config = config_view.get_config()
+            definition[view] = config.to_string()
+
+        stype_dict['definition'] = definition
 
     # getting pipeline process
     # stypes_codes = []

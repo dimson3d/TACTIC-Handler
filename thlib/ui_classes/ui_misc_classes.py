@@ -609,7 +609,20 @@ class Ui_debugLogWidget(QtGui.QDialog, ui_debuglog.Ui_DebugLog):
         self.fill_modules_tree()
 
 
-class SuggestedLineEdit(QtGui.QLineEdit):
+class SuggestedSearchWidget(QtGui.QWidget):
+
+    def __init__(self, parent=None):
+        super(self.__class__, self).__init__(parent=parent)
+
+        self.create_ui()
+
+    def create_ui(self):
+        pass
+
+
+class SuggestedLineEdit(QtGui.QComboBox):
+    returnPressed = QtCore.Signal(object)
+
     def __init__(self, stype, project, style='flat', parent=None):
         super(self.__class__, self).__init__(parent=parent)
 
@@ -617,10 +630,13 @@ class SuggestedLineEdit(QtGui.QLineEdit):
         self.stype = stype
         self.project = project
         self.return_pressed = False
+        self.single_click_select_all = True
         self.display_limit = 50
         self.suggest_column = 'name'
 
         self.create_ui()
+        se = SuggestedSearchWidget(self)
+        se.show()
 
     def create_ui(self):
 
@@ -630,11 +646,16 @@ class SuggestedLineEdit(QtGui.QLineEdit):
 
         # limiting available search characters
         self.setValidator(Qt4Gui.QRegExpValidator(QtCore.QRegExp('\w+'), self))
-        self.setFocusPolicy(QtCore.Qt.StrongFocus)
+        # self.setFocusPolicy(QtCore.Qt.StrongFocus)
+        self.setEditable(True)
+        self.setFrame(False)
+        self.setMaxVisibleItems(50)
+        # self.set
 
     def controls_actions(self):
-        self.returnPressed.connect(self.set_return_pressed)
-        self.textEdited.connect(self.search_suggestions)
+        # self.returnPressed.connect(self.set_return_pressed)
+        self.editTextChanged.connect(self.search_suggestions)
+        # self.textEdited.connect(self.search_suggestions)
 
     def customize_ui(self):
 
@@ -681,6 +702,11 @@ class SuggestedLineEdit(QtGui.QLineEdit):
     def set_suggest_column(self, column_name):
         self.suggest_column = column_name
 
+    # def mousePressEvent(self, event):
+    #     event.accept()
+    #     # if self.single_click_select_all:
+    #     #     self.selectAll()
+
     @gf.catch_error
     def search_suggestions(self, key=None):
 
@@ -715,8 +741,11 @@ class SuggestedLineEdit(QtGui.QLineEdit):
             search_suggestions_worker.try_start()
 
     def search_suggestions_end(self, result=None):
+        # print(result)
+        # pass
 
         if result:
+
             suggestions_list = []
 
             for item in result:
@@ -724,21 +753,29 @@ class SuggestedLineEdit(QtGui.QLineEdit):
                 if item_text:
                     suggestions_list.append(item_text)
 
-            if not self.return_pressed:
-                completer_strings = QtCore.QStringListModel(list(set(suggestions_list)), self)
-                if not self.completer():
-                    completer = QtGui.QCompleter(self)
-                    completer.setCompletionMode(QtGui.QCompleter.UnfilteredPopupCompletion)
-                    completer.setCaseSensitivity(QtCore.Qt.CaseInsensitive)
-                    self.setCompleter(completer)
-                else:
-                    completer = self.completer()
+            # self.setEditText('')
+            # self.clear()
+            # self.addItems(suggestions_list)
+            # self.se
+            # # if not self.return_pressed:
+            completer_strings = QtCore.QStringListModel(list(set(suggestions_list)), self)
+            # # completer_strings = QtCore.QAbstractTableModel(self)
+            # print(completer_strings)
+            print(suggestions_list)
+            # # if not self.completer():
+            completer = QtGui.QCompleter()
+            completer.setCompletionMode(QtGui.QCompleter.UnfilteredPopupCompletion)
+            completer.setCaseSensitivity(QtCore.Qt.CaseInsensitive)
+            self.setCompleter(completer)
+            # # else:
+            # #     completer = self.completer()
+            #
+            completer.setModel(completer_strings)
 
-                completer.setModel(completer_strings)
-
-                completer.complete()
-
-            self.return_pressed = False
+            completer.complete()
+            # # self.setCompleter(None)
+            #
+            # # self.return_pressed = False
 
 
 class StyledTabWidget(QtGui.QTabWidget):

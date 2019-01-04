@@ -5,20 +5,6 @@
   <property name="windowModality">
    <enum>Qt::ApplicationModal</enum>
   </property>
-  <property name="geometry">
-   <rect>
-    <x>0</x>
-    <y>0</y>
-    <width>427</width>
-    <height>276</height>
-   </rect>
-  </property>
-  <property name="minimumSize">
-   <size>
-    <width>427</width>
-    <height>276</height>
-   </size>
-  </property>
   <property name="windowTitle">
    <string>TACTIC handler</string>
   </property>
@@ -32,22 +18,22 @@ QTreeView::item {
 	border-color:  rgba(75, 75, 75, 75);
 	border-radius: 1px;
 	padding: 0px;
-	background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 rgba(175, 175, 175, 25), stop: 1 rgba(175, 175, 175, 0));
+	background: rgba(175, 175, 175, 25);
 }
 
 QTreeView::item:hover {
-    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 rgba(175, 175, 175, 50), stop: 1 rgba(175, 175, 175, 0));
+    background: rgba(175, 175, 175, 50);
     border: 1px solid rgba(128, 128, 128, 75);
 }
 QTreeView::item:selected {
     border: 1px solid transparent;
 }
 QTreeView::item:selected:active{
-	background: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 rgba(82, 133, 166, 255), stop:1 rgba(0, 0, 0, 0));
+	background: rgba(82, 133, 166, 255);
     border: 1px solid transparent;
 }
 QTreeView::item:selected:!active {
-	background: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 rgba(82, 133, 166, 255), stop:1 rgba(0, 0, 0, 0));
+	background: rgba(82, 133, 166, 255);
     border: 1px solid transparent;
 }
 QTreeView::item:selected{
@@ -55,12 +41,22 @@ QTreeView::item:selected{
     border: 1px solid transparent;
 }
 QDockWidget::title{
-	padding: 0px;
+    padding: 4px;
+    border-radius: 3px;
+	padding-left: 10px;
+    background-color: rgba(0,0,0,64);
 }
 QDockWidget::close-button, QDockWidget::float-button {
 	padding: 0px;
 }
 
+QDockWidget {
+    border: 0px ;
+    border-radius: 0px;
+}
+QDockWidget::close-button {
+    border: none;
+}
 QTabWidget::pane {
     border: 0px;
 }
@@ -116,8 +112,8 @@ QGroupBox::title {
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>427</width>
-     <height>24</height>
+     <width>96</width>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuConfig">
@@ -144,7 +140,15 @@ QGroupBox::title {
      <string>Project</string>
     </property>
    </widget>
+   <widget class="QMenu" name="menuView">
+    <property name="title">
+     <string>View</string>
+    </property>
+    <addaction name="actionCheckin_Checkout"/>
+    <addaction name="actionMy_Tactic"/>
+   </widget>
    <addaction name="menuConfig"/>
+   <addaction name="menuView"/>
    <addaction name="menuProject"/>
   </widget>
   <action name="actionConfiguration">
@@ -180,6 +184,30 @@ QGroupBox::title {
   <action name="actionDebug_Log">
    <property name="text">
     <string>Debug Log</string>
+   </property>
+  </action>
+  <action name="actionCheckin_Checkout">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Checkin / Checkout</string>
+   </property>
+  </action>
+  <action name="actionMy_Tactic">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>My Tactic</string>
+   </property>
+  </action>
+  <action name="actionAssets_browser">
+   <property name="text">
+    <string>Assets browser</string>
    </property>
   </action>
  </widget>

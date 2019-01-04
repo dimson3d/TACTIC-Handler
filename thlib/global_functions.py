@@ -709,9 +709,17 @@ def gen_acronym(word, length=2):
     return acronym
 
 
-def prettify_text(text):
+def prettify_text(text, first_letter=False):
     if text:
-        return text.replace('_', ' ').capitalize()
+        if first_letter:
+            text = text.replace('_', ' ').split(' ')
+            final_text = []
+            for word in text:
+                word = word[:1].upper() + word[1:]
+                final_text.append(word)
+            return u' '.join(final_text)
+        else:
+            return text.replace('_', ' ').title()
 
 
 def minify_code(source, pack=False):

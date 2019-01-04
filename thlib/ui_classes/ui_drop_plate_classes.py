@@ -309,9 +309,14 @@ class Ui_dropPlateWidget(QtGui.QWidget, ui_drop_plate.Ui_dropPlate):
         add_file.setIcon(gf.get_icon('folder-open'))
         add_file.triggered.connect(self.add_files_from_menu)
 
+        paste_from_clipboard = QtGui.QAction('Paste From Clipboard', self.dropTreeWidget)
+        paste_from_clipboard.setIcon(gf.get_icon('folder-open'))
+        # paste_from_clipboard.triggered.connect(self.add_files_from_menu)
+
         menu = QtGui.QMenu()
 
         menu.addAction(add_file)
+        menu.addAction(paste_from_clipboard)
 
         return menu
 

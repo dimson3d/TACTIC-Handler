@@ -662,7 +662,19 @@ class Ui_snapshotBrowserWidget(QtGui.QWidget, ui_snapshot_browser.Ui_snapshotBro
                 self.clear()
 
         elif self.item_widget.type == 'sobject':
-            self.snapshots = self.item_widget.get_snapshot()
+
+            # checking if we have any snapshots, we can show it in snapshot browser
+            # versionless here have priority
+            self.snapshots = None
+            snapshots = self.item_widget.get_all_snapshots()
+            if snapshots:
+                # first we try to get 'publish' process
+                if snapshots.get('publish'):
+                    self.snapshots = self.item_widget.get_snapshots('publish')
+                # then 'icon' process should do
+                elif snapshots.get('icon'):
+                    self.snapshots = self.item_widget.get_snapshots('icon')
+
             if self.snapshots:
                 self.init_snapshot(True)
                 self.previewGraphicsView.resizeEvent = self.graphicsSceneResizeEvent

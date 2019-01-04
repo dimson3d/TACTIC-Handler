@@ -1028,17 +1028,18 @@ class Ui_checkinOutPageWidget(QtGui.QWidget, ui_checkinOutPage.Ui_checkinOutPage
             self.top_item = QtGui.QTreeWidgetItem()
             self.top_item.setCheckState(0, QtCore.Qt.Checked)
             if not name:
-                name = 'Untyped'
+                name = 'Category'
             self.top_item.setText(0, name.capitalize())
             self.processTreeWidget.addTopLevelItem(self.top_item)
             for item in value:
+                stype = env_inst.projects[project_code].stypes.get(item.get('code'))
                 self.child_item = QtGui.QTreeWidgetItem()
-                if item.get('title'):
-                    item_title = item['title'].capitalize()
-                else:
-                    item_title = 'Unnamed'
-                item_code = item['code']
-                self.child_item.setText(0, item_title)
+                # if item.get('title'):
+                #     item_title = item['title'].capitalize()
+                # else:
+                #     item_title = 'Unnamed'
+                item_code = stype.get_code()
+                self.child_item.setText(0, stype.get_pretty_name())
                 self.child_item.setText(1, item_code)
                 self.child_item.setData(0, QtCore.Qt.UserRole, item)
                 self.child_item.setCheckState(0, QtCore.Qt.Checked)

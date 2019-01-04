@@ -125,14 +125,16 @@ class deleteSobjectWidget(QtGui.QWidget):
 
 
 class commitWidget(QtGui.QWidget):
-    def __init__(self, args_dict, commit_queue_ui=None, parent=None):
+    def __init__(self, args_dict, commit_queue_ui=None, multiple_edit_mode=False, parent=None):
         super(self.__class__, self).__init__(parent=parent)
 
         self.args_dict = args_dict
         self.commit_queue_ui = commit_queue_ui
+        self.multiple_edit_mode = multiple_edit_mode
 
         self.item_widget = self.args_dict['item_widget']
         self.commit_item = None
+        self.commit_items_list = None
         self.repo = self.args_dict['repo_name']
         self.context = self.args_dict['context']
         self.update_versionless = self.args_dict['update_versionless']
@@ -145,7 +147,6 @@ class commitWidget(QtGui.QWidget):
         self.screenshots_to_upload_list = []
 
     def create_ui(self):
-
         self.shown = True
         self.create_main_layout()
         self.create_info_label_widget()
@@ -161,9 +162,22 @@ class commitWidget(QtGui.QWidget):
         self.switch_versionless_checkbox()
         self.switch_only_versionless_checkbox()
 
-        self.refresh_virtual_snapshot()
+        if self.multiple_edit_mode:
+            self.collapse_wdg_vls.setEnabled(False)
+            self.collapse_wdg_vers.setEnabled(False)
+            self.collapse_wdg_descr.setEnabled(False)
+            self.explicit_file_name_edit.setEnabled(False)
+            self.explicit_file_name_label.setEnabled(False)
+            self.context_as_file_name_checkbox.setEnabled(False)
+            self.previews_widget.setEnabled(False)
+            self.description_widget.setEnabled(False)
+        else:
+            self.refresh_virtual_snapshot()
 
         self.controls_actions()
+
+    def set_commit_items_list(self, commit_items_list):
+        self.commit_items_list = commit_items_list
 
     def edit_previews(self):
         files_objects = self.get_upload_list_files_objects()
@@ -311,6 +325,9 @@ class commitWidget(QtGui.QWidget):
             if check_ok:
                 self.args_dict['files_objects'] = files_objects
                 self.chekin_snapshot()
+            else:
+                self.commit_item.set_progress_indicator_on()
+                self.commit_item.set_commit_failed()
 
     def inplace_checkin_done(self, result):
         pass
@@ -380,19 +397,27 @@ class commitWidget(QtGui.QWidget):
             self.commit_item.set_description(self.description_widget.get_description('plain'))
 
     def controls_actions(self):
+
         self.update_versionless_checkbox.stateChanged.connect(self.switch_versionless_checkbox)
         self.only_versionless_checkbox.stateChanged.connect(self.switch_only_versionless_checkbox)
-        self.context_as_file_name_checkbox.stateChanged.connect(self.switch_context_as_filename)
-        self.description_widget.descriptionTextEdit.textChanged.connect(self.refresh_commit_item_description)
-        self.context_edit.textEdited.connect(self.edit_context)
-        self.context_edit.editingFinished.connect(self.refresh_virtual_snapshot)
-        self.explicit_file_name_edit.textEdited.connect(self.edit_explicit_filename)
-        self.explicit_file_name_edit.editingFinished.connect(self.refresh_virtual_snapshot)
-        self.repo_combo_box.currentIndexChanged.connect(self.change_current_repo)
-        self.make_screenshot_button.clicked.connect(lambda: self.set_preview_to_commit_item('screenshot'))
-        self.choose_preview_button.clicked.connect(self.browse_for_preview)
-        self.edit_previews_button.clicked.connect(self.edit_previews)
-        self.clear_previews_button.clicked.connect(self.clear_all)
+
+        if self.multiple_edit_mode:
+            self.update_versionless_checkbox.stateChanged.connect(self.apply_to_multiple_items)
+            self.only_versionless_checkbox.stateChanged.connect(self.apply_to_multiple_items)
+            self.context_edit.editingFinished.connect(self.apply_to_multiple_items)
+            self.repo_combo_box.currentIndexChanged.connect(self.apply_to_multiple_items)
+        else:
+            self.context_as_file_name_checkbox.stateChanged.connect(self.switch_context_as_filename)
+            self.description_widget.descriptionTextEdit.textChanged.connect(self.refresh_commit_item_description)
+            self.context_edit.editingFinished.connect(self.refresh_virtual_snapshot)
+            self.context_edit.textEdited.connect(self.edit_context)
+            self.explicit_file_name_edit.textEdited.connect(self.edit_explicit_filename)
+            self.explicit_file_name_edit.editingFinished.connect(self.refresh_virtual_snapshot)
+            self.make_screenshot_button.clicked.connect(lambda: self.set_preview_to_commit_item('screenshot'))
+            self.choose_preview_button.clicked.connect(self.browse_for_preview)
+            self.edit_previews_button.clicked.connect(self.edit_previews)
+            self.clear_previews_button.clicked.connect(self.clear_all)
+            self.repo_combo_box.currentIndexChanged.connect(self.change_current_repo)
 
     def create_main_layout(self):
         self.main_layout = QtGui.QGridLayout(self)
@@ -426,6 +451,14 @@ class commitWidget(QtGui.QWidget):
         self.drop_plate.dragEnterEvent = self.drop_plate_dragEnterEvent
         self.drop_plate.dragMoveEvent = self.drop_plate_dragMoveEvent
         self.drop_plate.dropEvent = self.drop_plate_dropEvent
+
+    def apply_to_multiple_items(self):
+        for commit_item in self.commit_items_list:
+            commit_widget = commit_item.get_commit_widget()
+            commit_widget.update_versionless_checkbox.setChecked(self.update_versionless_checkbox.checkState())
+            commit_widget.only_versionless_checkbox.setChecked(self.only_versionless_checkbox.checkState())
+            commit_widget.context_edit.setText(self.context_edit.text())
+            commit_widget.repo_combo_box.setCurrentIndex(self.repo_combo_box.currentIndex())
 
     def add_links_to_upload_list(self, links):
         for link in links:
@@ -492,6 +525,8 @@ class commitWidget(QtGui.QWidget):
 
         self.previews_layout = QtGui.QHBoxLayout()
         self.previews_layout.setContentsMargins(0, 0, 0, 0)
+        self.previews_widget = QtGui.QWidget()
+        self.previews_widget.setLayout(self.previews_layout)
 
         self.make_screenshot_button = QtGui.QToolButton()
         self.make_screenshot_button.setAutoRaise(True)
@@ -528,7 +563,7 @@ class commitWidget(QtGui.QWidget):
         self.main_layout.addWidget(self.repo_combo_box, 11, 1, 1, 1)
         self.main_layout.addWidget(self.repo_label, 11, 0, 1, 1)
         self.main_layout.addWidget(self.context_as_file_name_checkbox, 12, 0, 1, 2)
-        self.main_layout.addLayout(self.previews_layout, 0, 0, 1, 2)
+        self.main_layout.addWidget(self.previews_widget, 0, 0, 1, 2)
 
     def create_info_label_widget(self):
         self.info_label_widget = QtGui.QLabel()
@@ -674,6 +709,13 @@ class commitWidget(QtGui.QWidget):
         self.fill_versions_widget(result)
         self.commit_item.set_progress_indicator_off()
 
+        if self.args_dict['checkin_app'] == 'maya':
+            import thlib.maya_functions as mf
+
+            temp_playblast = mf.get_temp_playblast()
+
+            self.commit_item.set_preview(image_path=temp_playblast)
+
     def create_versionless_widget(self):
 
         self.collapse_wdg_vls = ui_misc_classes.Ui_collapsableWidget(state=False)
@@ -724,20 +766,25 @@ class commitWidget(QtGui.QWidget):
             for i, fl in enumerate(values['versionless']['names']):
                 full_path = gf.form_path(self.repo['value'][0] + '/' + values['versionless']['paths'][i])
                 item = QtGui.QTreeWidgetItem()
-                item.setText(0, ''.join(fl))
+                item.setText(0, u''.join(fl))
                 item.setText(1, full_path)
                 self.treeWidget_vls.addTopLevelItem(item)
         self.treeWidget_vls.resizeColumnToContents(0)
 
     def fill_versions_widget(self, paths):
         self.treeWidget_vers.clear()
+        file_names = []
         for keys, values in paths:
             for i, fl in enumerate(values['versioned']['names']):
                 full_path = gf.form_path(self.repo['value'][0] + '/' + values['versioned']['paths'][i])
                 item = QtGui.QTreeWidgetItem()
-                item.setText(0, ''.join(fl))
+                item.setText(0, u''.join(fl))
+                file_names.append(u''.join(fl))
                 item.setText(1, full_path)
                 self.treeWidget_vers.addTopLevelItem(item)
+
+        if self.commit_item:
+            self.commit_item.set_new_title(file_names[0])
         self.treeWidget_vers.resizeColumnToContents(0)
 
     def create_description_widget(self):
@@ -754,7 +801,7 @@ class commitWidget(QtGui.QWidget):
         self.description_widget.descriptionTextEdit.setViewportMargins(0, 20, 0, 0)
 
         self.description_widget.setMinimumHeight(100)
-        self.description_widget.setMinimumWidth(400)
+        # self.description_widget.setMinimumWidth(400)
 
         self.description_widget.set_description(self.description)
 
@@ -829,7 +876,8 @@ class Ui_commitQueueWidget(QtGui.QMainWindow, ui_commit_queue.Ui_commitQueue):
         else:
             self.setWindowTitle('Global Commit Queue')
 
-        self.setWindowFlags(QtCore.Qt.Window | QtCore.Qt.WindowStaysOnTopHint)
+        # self.setWindowFlags(QtCore.Qt.Window | QtCore.Qt.WindowStaysOnTopHint)
+        self.setWindowFlags(QtCore.Qt.Window)
 
         server_thread_pool = QtCore.QThreadPool()
         server_thread_pool.setMaxThreadCount(1)
@@ -845,7 +893,12 @@ class Ui_commitQueueWidget(QtGui.QMainWindow, ui_commit_queue.Ui_commitQueue):
 
         self.create_empty_queue_label()
 
+        self.customize_ui()
+
         self.controls_actions()
+
+    def customize_ui(self):
+        self.filesQueueTreeWidget.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
 
     def create_files_queue_tree_context_menu(self):
         self.filesQueueTreeWidget.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
@@ -877,7 +930,7 @@ class Ui_commitQueueWidget(QtGui.QMainWindow, ui_commit_queue.Ui_commitQueue):
                     menu.exec_(Qt4Gui.QCursor.pos())
 
     def controls_actions(self):
-        self.filesQueueTreeWidget.itemPressed.connect(self.select_current_commit_widget)
+        self.filesQueueTreeWidget.itemSelectionChanged.connect(self.select_current_commit_widget)
         self.clearQueuePushButton.clicked.connect(self.clear_queue)
         self.closePushButton.clicked.connect(self.close)
         self.commitAllPushButton.clicked.connect(self.commit_queue)
@@ -890,9 +943,18 @@ class Ui_commitQueueWidget(QtGui.QMainWindow, ui_commit_queue.Ui_commitQueue):
 
         self.commitEditorLayout.addWidget(self.empty_label, 0, 0)
 
-    def select_current_commit_widget(self, tree_item):
-        current_item_widget = self.filesQueueTreeWidget.itemWidget(tree_item, 0)
-        self.set_current_commit_widget(current_item_widget.get_commit_widget())
+    def select_current_commit_widget(self):
+
+        selected_items = self.filesQueueTreeWidget.selectedItems()
+        if selected_items:
+            if len(selected_items) > 1:
+                commit_items = []
+                for item in selected_items:
+                    commit_items.append(self.filesQueueTreeWidget.itemWidget(item, 0))
+                self.set_multiple_commit_widget(commit_items)
+            else:
+                current_item_widget = self.filesQueueTreeWidget.itemWidget(selected_items[0], 0)
+                self.set_current_commit_widget(current_item_widget.get_commit_widget())
 
     def commit_queue(self):
         self.commitAllPushButton.setEnabled(False)
@@ -934,9 +996,13 @@ class Ui_commitQueueWidget(QtGui.QMainWindow, ui_commit_queue.Ui_commitQueue):
         updated_list = []
 
         for commit_item in self.queue_list:
+            item_widget = commit_item.get_args_dict()['item_widget']
+            pipeline_code = item_widget.search_widget.stype.get_code()
+
             search_key = tc.split_search_key(commit_item.get_args_dict()['search_key'])
 
-            checkin_ui = env_inst.get_check_tree(search_key['project_code'], 'checkin_out', search_key['pipeline_code'])
+            checkin_ui = env_inst.get_check_tree(search_key['project_code'], 'checkin_out', pipeline_code)
+
             if checkin_ui not in updated_list:
                 checkin_ui.refresh_results()
                 updated_list.append(checkin_ui)
@@ -1000,6 +1066,24 @@ class Ui_commitQueueWidget(QtGui.QMainWindow, ui_commit_queue.Ui_commitQueue):
             if commit_item.get_args_dict()['file_paths'] == args_dict['file_paths']:
                 return commit_item
         return False
+
+    def set_multiple_commit_widget(self, commit_items):
+        self.check_queue()
+        if self.queue_list:
+
+            commit_widget = commit_items[-1].get_commit_widget()
+            commit_widget.update_args_dict()
+
+            new_commit_widget = commitWidget(
+                args_dict=commit_widget.args_dict,
+                commit_queue_ui=self,
+                multiple_edit_mode=True
+            )
+
+            self.commitEditorLayout.addWidget(new_commit_widget, 0, 0)
+
+            new_commit_widget.set_commit_items_list(commit_items)
+            new_commit_widget.show()
 
     def set_current_commit_widget(self, commit_widget):
 

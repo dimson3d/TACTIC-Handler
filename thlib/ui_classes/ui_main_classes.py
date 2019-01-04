@@ -13,7 +13,6 @@ import thlib.tactic_classes as tc
 import thlib.update_functions as uf
 import thlib.global_functions as gf
 import thlib.ui.ui_main as ui_main
-import thlib.ui.ui_main_tabs as ui_main_tabs
 import thlib.ui.misc.ui_serverside as ui_serverside
 import thlib.ui.misc.ui_update as ui_update
 import thlib.ui.misc.ui_create_update as ui_create_update
@@ -29,7 +28,6 @@ if env_mode.get_mode() == 'maya':
 
 
 reload(ui_main)
-reload(ui_main_tabs)
 reload(ui_serverside)
 reload(ui_update)
 reload(ui_create_update)
@@ -201,13 +199,12 @@ class Ui_serverScriptEditForm(QtGui.QDialog, ui_serverside.Ui_scriptEditForm):
             self.stackTraceTextEdit.setText(pprint.pformat(result['info']['spt_ret_val']))
 
 
-class Ui_mainTabs(QtGui.QWidget, ui_main_tabs.Ui_mainTabsForm):
+class Ui_mainTabs(QtGui.QWidget):
     def __init__(self, project_code, parent=None):
         super(self.__class__, self).__init__(parent=parent)
 
         env_inst.ui_main_tabs[project_code] = self
 
-        self.setupUi(self)
         self.checkin_out_config_projects = cfg_controls.get_checkin_out_projects()
         self.checkin_out_config = cfg_controls.get_checkin_out()
         self.isCreated = False
@@ -220,7 +217,7 @@ class Ui_mainTabs(QtGui.QWidget, ui_main_tabs.Ui_mainTabsForm):
             if gf.get_value_from_config(self.checkin_out_config, 'controlsTabsFilterGroupBox'):
                 self.customize_controls_tabs()
 
-        self.create_ui_main_tabs()
+        self.create_ui()
 
     def customize_controls_tabs(self):
         if self.checkin_out_config_projects:
@@ -249,11 +246,13 @@ class Ui_mainTabs(QtGui.QWidget, ui_main_tabs.Ui_mainTabsForm):
                         else:
                             self.main_tabWidget.insertTab(i, self.assetsBrowserTab, tab[1])
 
-    def create_ui_main_tabs(self):
+    def create_ui(self):
 
         self.ui_checkin_checkout = None
-        self.skeyLineEdit_actions()
-        self.readSettings()
+        # self.skeyLineEdit_actions()
+        # self.readSettings()
+        self.main_layout = QtGui.QGridLayout(self)
+        self.setLayout(self.main_layout)
 
     def get_tab_index(self, tab_widget):
         return self.main_tabWidget.indexOf(tab_widget)
@@ -274,7 +273,13 @@ class Ui_mainTabs(QtGui.QWidget, ui_main_tabs.Ui_mainTabsForm):
                 dl.log('Handling Maya Hotkeys', group_id='Maya')
                 env_inst.ui_maya_dock.handle_hotkeys()
 
+            self.ui_checkin_checkout.setHidden(False)
+            env_inst.ui_main.set_info_status_text('')
+
         if run_thread:
+
+            env_inst.ui_main.set_info_status_text(
+                '<span style=" font-size:8pt; color:#00ff00;">Getting Search Types</span>')
 
             def get_stypes_agent():
                 return self.project.get_stypes()
@@ -303,17 +308,18 @@ class Ui_mainTabs(QtGui.QWidget, ui_main_tabs.Ui_mainTabsForm):
         if self.stypes_items:
             self.ui_checkin_checkout = ui_checkin_out_tabs_classes.Ui_checkInOutTabWidget(
                 self.project,
-                self.checkInOutTab,
+                self,
                 parent=self
             )
-            self.checkInOutLayout.addWidget(self.ui_checkin_checkout)
+            self.ui_checkin_checkout.setHidden(True)
+            self.main_layout.addWidget(self.ui_checkin_checkout)
 
-    def create_ui_my_tactic(self):
-        """
-        Create My Tactic Tab
-        """
-        self.ui_my_tactic = ui_my_tactic_classes.Ui_myTacticWidget(self)
-        self.myTacticLayout.addWidget(self.ui_my_tactic)
+    # def create_ui_my_tactic(self):
+    #     """
+    #     Create My Tactic Tab
+    #     """
+    #     self.ui_my_tactic = ui_my_tactic_classes.Ui_myTacticWidget(self)
+    #     self.myTacticLayout.addWidget(self.ui_my_tactic)
 
     def create_ui_float_notify(self):
         """
@@ -323,19 +329,12 @@ class Ui_mainTabs(QtGui.QWidget, ui_main_tabs.Ui_mainTabsForm):
         self.float_notify.show()
         self.float_notify.setSizeGripEnabled(True)
 
-    def create_ui_assets_browser(self):
-        """
-        Create Assets Browser Tab
-        """
-        self.ui_assets_browser = ui_assets_browser_classes.Ui_assetsBrowserWidget(self)
-        self.assetsBrowserLayout.addWidget(self.ui_assets_browser)
-
-    def click_on_skeyLineEdit(self, event):
-        self.skeyLineEdit.selectAll()
-
-    def skeyLineEdit_actions(self):
-        self.skeyLineEdit.mousePressEvent = self.click_on_skeyLineEdit
-        self.skeyLineEdit.returnPressed.connect(self.go_by_skey)
+    # def create_ui_assets_browser(self):
+    #     """
+    #     Create Assets Browser Tab
+    #     """
+    #     self.ui_assets_browser = ui_assets_browser_classes.Ui_assetsBrowserWidget(self)
+    #     self.assetsBrowserLayout.addWidget(self.ui_assets_browser)
 
     def go_by_skey(self, skey_in=None, relates_to=None):
         # TODO Need to rewrite this according to porjects tabs
@@ -417,46 +416,30 @@ class Ui_mainTabs(QtGui.QWidget, ui_main_tabs.Ui_mainTabsForm):
         self.loading_label.setAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
         self.loading_label.setVisible(False)
 
-        self.mainTabsLayout.addWidget(self.loading_label, 0, 0, 0, 0)
+        self.main_layout.addWidget(self.loading_label, 0, 0, 0, 0)
 
     def toggle_loading_label(self):
         if self.loading_label.isVisible():
             self.loading_label.setVisible(False)
-            self.main_tabWidget.setVisible(True)
-            self.skeyLineEdit.setVisible(True)
+            # self.main_tabWidget.setVisible(True)
+            # self.skeyLineEdit.setVisible(True)
         else:
             self.loading_label.setVisible(True)
-            self.main_tabWidget.setVisible(False)
-            self.skeyLineEdit.setVisible(False)
+            # self.main_tabWidget.setVisible(False)
+            # self.skeyLineEdit.setVisible(False)
 
-    def set_settings_from_dict(self, settings_dict=None):
-
-        if not settings_dict:
-            settings_dict = {
-                'main_tabWidget_currentIndex': 0,
-            }
-
-        self.main_tabWidget.setCurrentIndex(int(settings_dict['main_tabWidget_currentIndex']))
-
-    def get_settings_dict(self):
-        settings_dict = {
-            'main_tabWidget_currentIndex': int(self.main_tabWidget.currentIndex())
-        }
-
-        return settings_dict
-
-    def readSettings(self):
-        self.set_settings_from_dict(env_read_config(
-            filename='ui_main_tab',
-            unique_id='ui_main/{0}/{1}'.format(self.current_namespace, self.current_project),
-            long_abs_path=True))
-
-    def writeSettings(self):
-        env_write_config(
-            self.get_settings_dict(),
-            filename='ui_main_tab',
-            unique_id='ui_main/{0}/{1}'.format(self.current_namespace, self.current_project),
-            long_abs_path=True)
+    # def readSettings(self):
+    #     self.set_settings_from_dict(env_read_config(
+    #         filename='ui_main_tab',
+    #         unique_id='ui_main/{0}/{1}'.format(self.current_namespace, self.current_project),
+    #         long_abs_path=True))
+    #
+    # def writeSettings(self):
+    #     env_write_config(
+    #         self.get_settings_dict(),
+    #         filename='ui_main_tab',
+    #         unique_id='ui_main/{0}/{1}'.format(self.current_namespace, self.current_project),
+    #         long_abs_path=True)
 
     def paintEvent(self, event):
         if not self.isCreated:
@@ -472,7 +455,7 @@ class Ui_mainTabs(QtGui.QWidget, ui_main_tabs.Ui_mainTabsForm):
         if self.ui_checkin_checkout:
             self.ui_checkin_checkout.close()
 
-        self.writeSettings()
+        # self.writeSettings()
         event.accept()
 
 
@@ -561,6 +544,7 @@ class Ui_Main(QtGui.QMainWindow, ui_main.Ui_MainWindow):
 
         self.setupUi(self)
         self.setWindowTitle('TACTIC Handler')
+        self.customize_ui()
 
         # instance attributes
         self.menu = None
@@ -570,8 +554,6 @@ class Ui_Main(QtGui.QMainWindow, ui_main.Ui_MainWindow):
         self.menuProject.setEnabled(True)
         self.readSettings()
         self.setIcon()
-        self.customize_ui()
-        # self.check_for_update()
         self.created = True
 
     def create_debuglog_widget(self):
@@ -585,6 +567,9 @@ class Ui_Main(QtGui.QMainWindow, ui_main.Ui_MainWindow):
         self.info_label.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
         self.info_label.setText('')
         self.label_layout.addWidget(self.info_label)
+
+    def set_status_text(self, text=''):
+        self.setStatusTip(text)
 
     def set_info_status_text(self, status_text=''):
         self.info_label.setText(status_text)
@@ -676,16 +661,18 @@ class Ui_Main(QtGui.QMainWindow, ui_main.Ui_MainWindow):
         if env_inst.get_current_project():
             current_project_widget = self.projects_docks[env_inst.get_current_project()].widget()
 
-            widget_name = current_project_widget.main_tabWidget.currentWidget().objectName()
+            current_project_widget.ui_checkin_checkout.apply_current_view_to_all()
 
-            if widget_name == 'checkInOutTab':
-                current_project_widget.ui_checkin_checkout.apply_current_view_to_all()
+            # widget_name = current_project_widget.main_tabWidget.currentWidget().objectName()
 
-            if widget_name == 'checkOutTab':
-                current_project_widget.ui_checkout.apply_current_view_to_all()
-
-            if widget_name == 'checkInTab':
-                current_project_widget.ui_checkin.apply_current_view_to_all()
+            # if widget_name == 'checkInOutTab':
+            #     current_project_widget.ui_checkin_checkout.apply_current_view_to_all()
+            #
+            # if widget_name == 'checkOutTab':
+            #     current_project_widget.ui_checkout.apply_current_view_to_all()
+            #
+            # if widget_name == 'checkInTab':
+            #     current_project_widget.ui_checkin.apply_current_view_to_all()
 
     def fill_projects_to_menu(self):
 
@@ -697,9 +684,8 @@ class Ui_Main(QtGui.QMainWindow, ui_main.Ui_MainWindow):
         projects_by_categories = gf.group_dict_by(all_projects_dicts, 'category')
 
         for cat_name, projects in projects_by_categories.iteritems():
-
             if cat_name:
-                cat_name = cat_name.replace('_', ' ').capitalize()
+                cat_name = gf.prettify_text(cat_name, True)
             else:
                 cat_name = 'No Category'
             if cat_name != 'Template':
@@ -807,8 +793,11 @@ class Ui_Main(QtGui.QMainWindow, ui_main.Ui_MainWindow):
         if result:
             self.restore_opened_projects()
             self.fill_projects_to_menu()
+            env_inst.ui_main.set_info_status_text('')
 
         if run_thread:
+            env_inst.ui_main.set_info_status_text(
+                '<span style=" font-size:8pt; color:#00ff00;">Getting projects</span>')
 
             def get_all_projects_agent():
                 return tc.get_all_projects()
@@ -840,6 +829,6 @@ class Ui_Main(QtGui.QMainWindow, ui_main.Ui_MainWindow):
                 #     self.projects_items_thread.routine = tc.get_all_projects
                 #     self.projects_items_thread.start(QtCore.QThread.NormalPriority)
 
-    def closeEventExt(self, event):
-        self.ext_window.deleteLater()
-        event.accept()
+    # def closeEventExt(self, event):
+    #     self.ext_window.deleteLater()
+    #     event.accept()

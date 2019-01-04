@@ -924,22 +924,21 @@ class Ui_checkInOutTabWidget(QtGui.QWidget, checkin_out_tabs.Ui_sObjTabs):
 
         grouped = gf.group_dict_by(all_stypes, 'type')
 
-        for name, value in grouped.iteritems():
+        for type_name, value in grouped.iteritems():
             top_item = QtGui.QTreeWidgetItem()
-            # self.top_item.setCheckState(0, QtCore.Qt.Checked)
-            if not name:
-                name = 'Untyped'
-            top_item.setText(0, name.capitalize())
+
+            if not type_name:
+                type_name = 'Category'
+            top_item.setText(0, type_name.capitalize())
             top_item.setCheckState(0, QtCore.Qt.Checked)
             self.sTypesTreeWidget.addTopLevelItem(top_item)
             for item in value:
                 child_item = QtGui.QTreeWidgetItem()
-                if item.get('title'):
-                    item_title = item['title'].capitalize()
-                else:
-                    item_title = 'Unnamed'
-                item_code = item['code']
-                child_item.setText(0, item_title)
+
+                stype = env_inst.projects[self.current_project].stypes.get(item.get('code'))
+
+                item_code = stype.get_code()
+                child_item.setText(0, stype.get_pretty_name())
                 child_item.setText(1, item_code)
                 child_item.setData(0, QtCore.Qt.UserRole, item)
                 child_item.setCheckState(0, QtCore.Qt.Checked)
@@ -1014,20 +1013,12 @@ class Ui_checkInOutTabWidget(QtGui.QWidget, checkin_out_tabs.Ui_sObjTabs):
 
         for i, stype in enumerate(self.stypes_items.itervalues()):
 
-            if stype.info['title']:
-                tab_name = stype.info['title'].capitalize()
-            else:
-                if stype.info['code']:
-                    tab_name = stype.info['code']
-                else:
-                    tab_name = 'Unnamed'
-
             tab_widget = QtGui.QWidget(self)
             tab_widget_layout = QtGui.QVBoxLayout()
             tab_widget_layout.setContentsMargins(0, 0, 0, 0)
             tab_widget_layout.setSpacing(0)
             tab_widget.setLayout(tab_widget_layout)
-            tab_widget.setObjectName(tab_name)
+            tab_widget.setObjectName(stype.get_pretty_name())
 
             self.all_search_tabs.append(checkin_out.Ui_checkInOutWidget(stype, tab_widget, self.project, self))
 

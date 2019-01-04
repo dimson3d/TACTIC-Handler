@@ -266,6 +266,8 @@ def query_search_types_extended(project_code, namespace):
     stypes = prj.get_search_types()
 
     from pyasm.widget import WidgetConfigView
+    from pyasm.search import WidgetDbConfig
+    from pyasm.biz import Project
 
     all_stypes = []
     for stype in stypes:
@@ -274,11 +276,18 @@ def query_search_types_extended(project_code, namespace):
         all_stypes.append(stype_dict)
 
         # getting views for columns viewer
-        views = ['table', 'definition']
+        views = ['table', 'definition', 'color', 'edit', 'edit_definition']
         definition = {}
+        full_search_type = Project.get_full_search_type(stype)
         for view in views:
-            config_view = WidgetConfigView.get_by_search_type(stype, view)
-            config = config_view.get_config()
+
+            db_config = WidgetDbConfig.get_by_search_type(full_search_type, view)
+            if db_config:
+                config = db_config.get_xml()
+            else:
+                config_view = WidgetConfigView.get_by_search_type(stype, view)
+                config = config_view.get_config()
+
             definition[view] = config.to_string()
 
         stype_dict['definition'] = definition
@@ -383,33 +392,51 @@ def query_sobjects(search_type, filters=[], order_bys=[], limit=None, offset=Non
         'limit': limit,
         'offset': offset,
     }
+    have_search_code = False
+    if sobjects_list:
+        if sobjects_list[0].get('code'):
+            have_search_code = True
 
     for sobject in sobjects_list:
 
         search = Search('sthpw/note')
-        search.add_op_filters([('process', 'publish'), ('search_type', search_type), ('search_code', sobject['code'])])
+        if have_search_code:
+            search.add_op_filters(
+                [('process', 'publish'), ('search_type', search_type), ('search_code', sobject['code'])])
+        else:
+            search.add_op_filters(
+                [('process', 'publish'), ('search_type', search_type), ('search_id', sobject['id'])])
 
         sobject['__notes_count__'] = search.get_count()
 
         search = Search('sthpw/task')
-        search.add_op_filters([('search_type', search_type), ('search_code', sobject['code'])])
+        if have_search_code:
+            search.add_op_filters([('search_type', search_type), ('search_code', sobject['code'])])
+        else:
+            search.add_op_filters([('search_type', search_type), ('search_id', sobject['id'])])
 
         sobject['__tasks_count__'] = search.get_count()
 
         search = Search('sthpw/snapshot')
-        search.add_op_filters(
-            [('process', ['icon', 'attachment', 'publish']), ('search_type', search_type), ('search_code', sobject['code'])])
+        if have_search_code:
+            search.add_op_filters(
+                [('process', ['icon', 'attachment', 'publish']), ('search_type', search_type), ('search_code', sobject['code'])])
+        else:
+            search.add_op_filters(
+                [('process', ['icon', 'attachment', 'publish']), ('search_type', search_type), ('search_id', sobject['id'])])
+        # search.add_order_by('timestamp asc')
         snapshots = search.get_sobjects()
+
+        snapshot_files = Snapshot.get_files_dict_by_snapshots(snapshots)
+
         snapshots_list = []
-
-        files = Snapshot.get_files_dict_by_snapshots(snapshots)
-
         for snapshot in snapshots:
             snapshot_dict = server.server._get_sobject_dict(snapshot)
             files_list = []
-            for fl in files.get(snapshot_dict['code']):
-                files_list.append(server.server._get_sobject_dict(fl))
-
+            files = snapshot_files.get(snapshot_dict['code'])
+            if files:
+                for fl in files:
+                    files_list.append(server.server._get_sobject_dict(fl))
             snapshot_dict['__files__'] = files_list
             snapshots_list.append(snapshot_dict)
 

@@ -317,7 +317,7 @@ class Project(object):
 
         # import time
         # start = time.time()
-
+        # for i in range(10):
         result = server_start(project=kwargs['project_code']).execute_python_script('', kwargs=code)
 
         # print time.time() - start
@@ -385,9 +385,8 @@ class Project(object):
                 if dct.get(stype['code']):
                     if process['search_type'] == dct.get(stype['code'])[0]['search_type']['name']:
                         stype_process[process['code']] = process
-            # print stype_process
+
             stype_obj = SType(stype, stype_schema, stype_process, project=self)
-            # print stype_process
             stypes_objects[stype['code']] = stype_obj
 
         return stypes_objects
@@ -433,9 +432,9 @@ class SType(object):
         if title:
             return title.title()
         else:
-            title = self.info.get('code').split('/')[0]
+            title = self.info.get('code').split('/')[-1]
             if title:
-                return title.title()
+                return title.replace('_', ' ').title()
             else:
                 return self.info['table_name'].title()
 
@@ -643,21 +642,28 @@ class SObject(object):
         self.notes_count = {'publish': 0}
 
     # Snapshots by search code
-    def query_snapshots(self, s_code, process=None, user=None):
+    def query_snapshots(self, s_code=None, s_id=None, process=None, order_bys=None, user=None):
         """
         Query for Snapshots
         :param s_code: Code of asset related to snapshot
         :param process: Process code
+        :param order_bys: Order By
         :param user: Optional users names
         :return:
         """
 
         if process:
-            filters = [('search_code', s_code), ('process', process), ('project_code', self.project.info['code'])]
+            if s_code:
+                filters = [('search_code', s_code), ('process', process), ('project_code', self.project.info['code'])]
+            elif s_id:
+                filters = [('search_id', s_id), ('process', process), ('project_code', self.project.info['code'])]
         else:
-            filters = [('search_code', s_code), ('project_code', self.project.info['code'])]
+            if s_code:
+                filters = [('search_code', s_code), ('project_code', self.project.info['code'])]
+            elif s_id:
+                filters = [('search_id', s_id), ('project_code', self.project.info['code'])]
 
-        return server_start(project=self.project.info['code']).query_snapshots(filters=filters, include_files=True)
+        return server_start(project=self.project.info['code']).query_snapshots(filters=filters, order_bys=order_bys, include_files=True)
 
     # Tasks by search code
     def query_tasks(self, s_code, process=None, user=None):
@@ -697,11 +703,13 @@ class SObject(object):
         return server.query(search_type, filters)
 
     # Query snapshots to update current
-    def update_snapshots(self):
+    def update_snapshots(self, order_bys=None):
         # import time
         # start = time.time()
-
-        snapshot_dict = self.query_snapshots(self.info['code'])
+        if self.info.get('code'):
+            snapshot_dict = self.query_snapshots(s_code=self.info['code'], order_bys=order_bys)
+        else:
+            snapshot_dict = self.query_snapshots(s_id=self.info['id'], order_bys=order_bys)
         self.init_snapshots(snapshot_dict)
 
         # end = time.time()
@@ -715,8 +723,8 @@ class SObject(object):
             self.process[process] = Process(snapshot_dict, process)
 
     # Snapshots by SObject
-    def get_snapshots(self):
-        snapshots_list = self.query_snapshots(self.info['code'])
+    def get_snapshots(self, order_bys=None):
+        snapshots_list = self.query_snapshots(self.info['code'], order_bys=order_bys)
         process_set = set(snapshot['process'] for snapshot in snapshots_list)
 
         for process in process_set:
@@ -959,9 +967,11 @@ class File(object):
 
     def get_meta_file_object(self):
         file_object = None
-        if self.get_metadata():
-            match_template = gf.MatchTemplate()
-            file_object = match_template.init_from_tactic_file_object(self)
+        metadata = self.get_metadata()
+        if metadata:
+            if metadata.get('template'):
+                match_template = gf.MatchTemplate()
+                file_object = match_template.init_from_tactic_file_object(self)
 
         if file_object:
             self.meta_file_object = True
@@ -1120,6 +1130,7 @@ def get_sobjects_new(search_type, filters=[], order_bys=[], limit=None, offset=N
     code = tq.prepare_serverside_script(tq.query_sobjects, kwargs, return_dict=True)
     project_code = split_search_key(search_type)['project_code']
     result = server_start(project=project_code).execute_python_script('', kwargs=code)
+
     if result['info']['spt_ret_val']:
         if result['info']['spt_ret_val'].startswith('Traceback'):
             sobjects_list = {'sobjects_list': []}
@@ -1143,68 +1154,69 @@ def get_sobjects_new(search_type, filters=[], order_bys=[], limit=None, offset=N
 
         # Create list of Sobjects
         for sobject in sobjects_list['sobjects_list']:
-            sobjects[sobject['code']] = SObject(sobject, process_codes, env_inst.projects[project_code])
-            sobjects[sobject['code']].init_snapshots(sobject['__snapshots__'])
-            sobjects[sobject['code']].set_notes_count('publish', sobject['__notes_count__'])
-            sobjects[sobject['code']].set_tasks_count('__total__', sobject['__tasks_count__'])
+            sobjects[sobject['__search_key__']] = SObject(sobject, process_codes, env_inst.projects[project_code])
+            sobjects[sobject['__search_key__']].init_snapshots(sobject['__snapshots__'])
+            sobjects[sobject['__search_key__']].set_notes_count('publish', sobject['__notes_count__'])
+            sobjects[sobject['__search_key__']].set_tasks_count('__total__', sobject['__tasks_count__'])
 
         return sobjects, info
 
 
-def get_sobjects(process_list=None, sobjects_list=None, get_snapshots=True, project_code=None):
-    """
-    Filters snapshot by search codes, and sobjects codes
-    :param sobjects_list: full list of stypes
-    :param get_snapshots: query for snapshots per sobject or not
-    :param project_code: assign project class to particular sObject
-    :return: dict of sObjects objects
-    """
-    sobjects = collections.OrderedDict()
-    if get_snapshots:
-        process_codes = list(process_list)
-        for builtin in ['icon', 'attachment', 'publish']:
-            if builtin not in process_codes:
-                process_codes.append(builtin)
+# DEPRECATED, IT IS NOT RESPECT SORTING
+# def get_sobjects(process_list=None, sobjects_list=None, get_snapshots=True, project_code=None):
+#     """
+#     Filters snapshot by search codes, and sobjects codes
+#     :param sobjects_list: full list of stypes
+#     :param get_snapshots: query for snapshots per sobject or not
+#     :param project_code: assign project class to particular sObject
+#     :return: dict of sObjects objects
+#     """
+#     sobjects = collections.OrderedDict()
+#     if get_snapshots:
+#         process_codes = list(process_list)
+#         for builtin in ['icon', 'attachment', 'publish']:
+#             if builtin not in process_codes:
+#                 process_codes.append(builtin)
+#
+#         s_code = [s['code'] for s in sobjects_list]
+#
+#         snapshots_list = query_snapshots(process_codes, s_code, project_code)
+#
+#         snapshots = collections.OrderedDict()
+#
+#         # filter snapshots by search_code
+#         for snapshot in snapshots_list:
+#             snapshots.setdefault(snapshot['search_code'], []).append(snapshot)
+#
+#         # append sObject info to the end of each search_code filtered list
+#         for sobject in sobjects_list:
+#             snapshots.setdefault(sobject['code'], []).append(sobject)
+#
+#         # creating dict of ready SObjects
+#         for k, v in snapshots.items():
+#             sobjects[k] = SObject(v[-1], process_codes, env_inst.projects[project_code])
+#             sobjects[k].init_snapshots(v[:-1])
+#     else:
+#         # Create list of Sobjects
+#         for sobject in sobjects_list:
+#             sobjects[sobject['code']] = SObject(sobject)
+#
+#     return sobjects
 
-        s_code = [s['code'] for s in sobjects_list]
 
-        snapshots_list = query_snapshots(process_codes, s_code, project_code)
-
-        snapshots = collections.OrderedDict()
-
-        # filter snapshots by search_code
-        for snapshot in snapshots_list:
-            snapshots.setdefault(snapshot['search_code'], []).append(snapshot)
-
-        # append sObject info to the end of each search_code filtered list
-        for sobject in sobjects_list:
-            snapshots.setdefault(sobject['code'], []).append(sobject)
-
-        # creating dict of ready SObjects
-        for k, v in snapshots.items():
-            sobjects[k] = SObject(v[-1], process_codes, env_inst.projects[project_code])
-            sobjects[k].init_snapshots(v[:-1])
-    else:
-        # Create list of Sobjects
-        for sobject in sobjects_list:
-            sobjects[sobject['code']] = SObject(sobject)
-
-    return sobjects
-
-
-def query_snapshots(process_list=None, s_code=None, project_code=None):
-    """
-    Query for snapshots belongs to asset
-    :return: list of snapshots
-    """
-
-    filters_snapshots = [
-        ('process', process_list),
-        ('project_code', project_code),
-        ('search_code', s_code),
-    ]
-
-    return server_start().query_snapshots(filters=filters_snapshots, include_files=True)
+# def query_snapshots(process_list=None, s_code=None, project_code=None):
+#     """
+#     Query for snapshots belongs to asset
+#     :return: list of snapshots
+#     """
+#
+#     filters_snapshots = [
+#         ('process', process_list),
+#         ('project_code', project_code),
+#         ('search_code', s_code),
+#     ]
+#
+#     return server_start().query_snapshots(filters=filters_snapshots, include_files=True)
 
 
 def server_query(filters, stype, columns=None, project=None, limit=0, offset=0, order_bys='timestamp desc'):
@@ -1214,7 +1226,7 @@ def server_query(filters, stype, columns=None, project=None, limit=0, offset=0, 
     if not columns:
         columns = []
 
-    server = server_start()
+    server = server_start(project=project)
 
     # filters = []
     # expr = ''
@@ -1245,6 +1257,7 @@ def server_query(filters, stype, columns=None, project=None, limit=0, offset=0, 
     # dl.info('Query Assets Names time: {0}'.format(5415), group_id='server_query/{0}')
     # print 'query time: ' + str(end - start)
     # print assets_list
+
     return server.query(built_process, filters, columns, order_bys, limit=limit, offset=offset)
 
 
@@ -1601,23 +1614,23 @@ def checkin_snapshot(search_key, context, snapshot_type=None, is_revision=False,
     return result
 
 
-def add_repo_info(search_key, context, snapshot, repo):
-    server = server_start()
-    # adding repository info
-    splitted_skey = server.split_search_key(search_key)
-    filters_snapshots = [
-        ('context', context),
-        ('search_code', splitted_skey[1]),
-        ('search_type', splitted_skey[0]),
-        ('version', -1),
-    ]
-    parent = server.query_snapshots(filters=filters_snapshots, include_files=False)[0]
-
-    data = {
-        snapshot.get('__search_key__'): {'repo': repo['name']},
-        parent.get('__search_key__'): {'repo': repo['name']},
-    }
-    server.update_multiple(data, False)
+# def add_repo_info(search_key, context, snapshot, repo):
+#     server = server_start()
+#     # adding repository info
+#     splitted_skey = server.split_search_key(search_key)
+#     filters_snapshots = [
+#         ('context', context),
+#         ('search_code', splitted_skey[1]),
+#         ('search_type', splitted_skey[0]),
+#         ('version', -1),
+#     ]
+#     parent = server.query_snapshots(filters=filters_snapshots, include_files=False)[0]
+#
+#     data = {
+#         snapshot.get('__search_key__'): {'repo': repo['name']},
+#         parent.get('__search_key__'): {'repo': repo['name']},
+#     }
+#     server.update_multiple(data, False)
 
 
 def update_description(search_key, description):

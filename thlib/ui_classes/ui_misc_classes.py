@@ -7,7 +7,6 @@ import thlib.global_functions as gf
 import thlib.tactic_classes as tc
 from thlib.environment import env_inst, env_server, env_tactic, dl
 import thlib.ui.misc.ui_collapsable as ui_collapsable
-import thlib.ui.misc.ui_horizontal_collapsable as ui_horizontal_collapsable
 import thlib.ui.misc.ui_debuglog as ui_debuglog
 
 
@@ -38,11 +37,11 @@ class Ui_collapsableWidget(QtGui.QWidget, ui_collapsable.Ui_collapsableWidget):
     def custom_style_sheet(self):
         self.collapseToolButton.setStyleSheet(
             'QToolButton {'
-            'background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 rgba(175, 175, 175, 32), stop: 1 rgba(0, 0, 0, 8));'
-            'border: 0px; border-radius: 4px; padding: 0px 0px;'
+            'background: rgba(96, 96, 96, 32);'
+            'border: 0px; border-radius: 3px; padding: 0px 0px;'
             'border-left: 2px solid rgb(128, 128, 128); border-right: 2px solid rgb(128, 128, 128);}'
             'QToolButton:pressed {'
-            'background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 rgba(0, 0, 0, 8), stop: 1 rgba(128, 128, 128, 32));}'
+            'background: rgba(128, 128, 128, 32)}'
         )
 
     def controls_actions(self):
@@ -96,11 +95,11 @@ class Ui_collapsableWidget(QtGui.QWidget, ui_collapsable.Ui_collapsableWidget):
             return False
 
 
-class Ui_horizontalCollapsableWidget(QtGui.QWidget, ui_horizontal_collapsable.Ui_horizontalCollapsableWidget):
+class Ui_horizontalCollapsableWidget(QtGui.QWidget):
     def __init__(self, text=None, parent=None):
         super(self.__class__, self).__init__(parent=parent)
 
-        self.setupUi(self)
+        self.create_ui()
 
         self.collapse_state = False
         self.__collapsedTex = ''
@@ -108,6 +107,26 @@ class Ui_horizontalCollapsableWidget(QtGui.QWidget, ui_horizontal_collapsable.Ui
 
         self.setText(text)
         self.__controlsActions()
+
+    def create_ui(self):
+        self.horizontalLayout = QtGui.QHBoxLayout(self)
+        self.horizontalLayout.setSpacing(0)
+        self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
+        self.horizontalLayout.setObjectName("horizontalLayout")
+        self.widget = QtGui.QWidget(self)
+        self.widget.setObjectName("widget")
+        self.horizontalLayout.addWidget(self.widget)
+        self.collapseToolButton = QtGui.QToolButton(self)
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Preferred)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.collapseToolButton.sizePolicy().hasHeightForWidth())
+        self.collapseToolButton.setSizePolicy(sizePolicy)
+        self.collapseToolButton.setMaximumWidth(12)
+        self.collapseToolButton.setAutoRaise(True)
+        self.collapseToolButton.setObjectName("collapseToolButton")
+        self.horizontalLayout.addWidget(self.collapseToolButton)
+        self.horizontalLayout.setStretch(1, 1)
 
     def __controlsActions(self):
         self.collapseToolButton.clicked.connect(self.__toggleCollapseState)
@@ -609,19 +628,69 @@ class Ui_debugLogWidget(QtGui.QDialog, ui_debuglog.Ui_DebugLog):
         self.fill_modules_tree()
 
 
-class SuggestedSearchWidget(QtGui.QWidget):
+# class SuggestedSearchWidget(QtGui.QWidget):
+#
+#     def __init__(self, parent=None):
+#         super(self.__class__, self).__init__(parent=parent)
+#
+#         self.create_ui()
+#
+#     def create_ui(self):
+#         pass
 
-    def __init__(self, parent=None):
-        super(self.__class__, self).__init__(parent=parent)
 
-        self.create_ui()
+# class CustomCompleter(QtGui.QCompleter):
+#     def __init__(self, *args, **kwargs):
+#         super(CustomCompleter, self).__init__(*args, **kwargs)
+#         self.setCompletionMode(QtGui.QCompleter.PopupCompletion)
+#         self.setCaseSensitivity(QtCore.Qt.CaseInsensitive)
+#
+#     def complete(self):
+#         super(CustomCompleter, self).complete()
+#         popup = self.popup()
+#         if not popup.isVisible():
+#             popup.show()
 
-    def create_ui(self):
-        pass
+
+class CompleterLineEdit(QtGui.QLineEdit):
+    def __init__(self, *args, **kwargs):
+        super(CompleterLineEdit, self).__init__(*args, **kwargs)
+
+        self.completer = QtGui.QCompleter()
+        self.completer.setCompletionMode(QtGui.QCompleter.UnfilteredPopupCompletion)
+        self.completer.setCaseSensitivity(QtCore.Qt.CaseInsensitive)
+        self.completer.popup().setStyleSheet("""
+        QListView {
+            font-size:10pt;
+            selection-background-color: #ffaa00;
+            selection-color: black;
+            background-color: #7A7A7A;
+            border-style: solid;
+            border: 0px solid #EBEBEB;
+            border-radius: 6;
+            color: #EBEBEB;
+            padding: 0px 0px 0px 0px; }
+        """)
+        self.setCompleter(self.completer)
+        completer_strings = QtCore.QStringListModel([], self)
+        self.completer.setModel(completer_strings)
+
+    def update_items_list(self, string_list):
+        self.completer.model().setStringList(string_list)
+
+    def clear_items_list(self):
+        self.completer.model().setStringList([])
+        self.completer.popup().hide()
+
+    # def mousePressEvent(self, event):
+    #     super(CompleterLineEdit, self).mousePressEvent(event)
+    #     self.completer.complete()
+
+    # def keyPressEvent(self, event):
+    #     super(CustomLineEdit, self).keyPressEvent(event)
 
 
-class SuggestedLineEdit(QtGui.QComboBox):
-    returnPressed = QtCore.Signal(object)
+class SuggestedLineEdit(CompleterLineEdit):
 
     def __init__(self, stype, project, style='flat', parent=None):
         super(self.__class__, self).__init__(parent=parent)
@@ -635,8 +704,6 @@ class SuggestedLineEdit(QtGui.QComboBox):
         self.suggest_column = 'name'
 
         self.create_ui()
-        se = SuggestedSearchWidget(self)
-        se.show()
 
     def create_ui(self):
 
@@ -646,16 +713,12 @@ class SuggestedLineEdit(QtGui.QComboBox):
 
         # limiting available search characters
         self.setValidator(Qt4Gui.QRegExpValidator(QtCore.QRegExp('\w+'), self))
-        # self.setFocusPolicy(QtCore.Qt.StrongFocus)
-        self.setEditable(True)
+        self.setFocusPolicy(QtCore.Qt.StrongFocus)
         self.setFrame(False)
-        self.setMaxVisibleItems(50)
-        # self.set
 
     def controls_actions(self):
         # self.returnPressed.connect(self.set_return_pressed)
-        self.editTextChanged.connect(self.search_suggestions)
-        # self.textEdited.connect(self.search_suggestions)
+        self.textEdited.connect(self.search_suggestions)
 
     def customize_ui(self):
 
@@ -666,7 +729,7 @@ class SuggestedLineEdit(QtGui.QComboBox):
                 border-radius: 8px;
                 show-decoration-selected: 1;
                 padding: 0px 8px;
-                background: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 rgba(255, 255, 255, 64), stop:1 rgba(255, 255, 255, 48));
+                background: rgba(255, 255, 255, 48);
                 background-position: bottom left;
                 background-repeat: fixed;
                 selection-background-color: darkgray;
@@ -683,7 +746,7 @@ class SuggestedLineEdit(QtGui.QComboBox):
                 border-radius: 8px;
                 show-decoration-selected: 1;
                 padding: 0px 8px;
-                background: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 rgba(255, 255, 255, 64), stop:1 rgba(255, 255, 255, 0));
+                background: rgba(255, 255, 255, 48);
                 background-position: bottom left;
                 background-image: url(":/ui_check/gliph/search_16.png");
                 background-repeat: fixed;
@@ -725,7 +788,6 @@ class SuggestedLineEdit(QtGui.QComboBox):
                     project=project,
                     limit=self.display_limit,
                     offset=0,
-                    order_bys='timestamp desc'
                 )
 
             server_thread_pool = QtCore.QThreadPool()
@@ -741,11 +803,8 @@ class SuggestedLineEdit(QtGui.QComboBox):
             search_suggestions_worker.try_start()
 
     def search_suggestions_end(self, result=None):
-        # print(result)
-        # pass
 
         if result:
-
             suggestions_list = []
 
             for item in result:
@@ -753,48 +812,10 @@ class SuggestedLineEdit(QtGui.QComboBox):
                 if item_text:
                     suggestions_list.append(item_text)
 
-            # self.setEditText('')
-            # self.clear()
-            # self.addItems(suggestions_list)
-            # self.se
-            # # if not self.return_pressed:
-            completer_strings = QtCore.QStringListModel(list(set(suggestions_list)), self)
-            # # completer_strings = QtCore.QAbstractTableModel(self)
-            # print(completer_strings)
-            print(suggestions_list)
-            # # if not self.completer():
-            completer = QtGui.QCompleter()
-            completer.setCompletionMode(QtGui.QCompleter.UnfilteredPopupCompletion)
-            completer.setCaseSensitivity(QtCore.Qt.CaseInsensitive)
-            self.setCompleter(completer)
-            # # else:
-            # #     completer = self.completer()
-            #
-            completer.setModel(completer_strings)
-
-            completer.complete()
-            # # self.setCompleter(None)
-            #
-            # # self.return_pressed = False
-
-
-class StyledTabWidget(QtGui.QTabWidget):
-    def __init__(self, parent=None):
-        super(self.__class__, self).__init__(parent=parent)
-
-        self.create_ui()
-
-    def create_ui(self):
-
-        self.customize_ui()
-
-        self.controls_actions()
-
-    def controls_actions(self):
-        pass
-
-    def customize_ui(self):
-        pass
+            self.update_items_list(suggestions_list)
+            self.completer.complete()
+        else:
+            self.clear_items_list()
 
 
 class StyledComboBox(QtGui.QComboBox):
@@ -815,3 +836,21 @@ class StyledComboBox(QtGui.QComboBox):
     def customize_ui(self):
         pass
 
+
+class StyledTabWidget(QtGui.QTabWidget):
+    def __init__(self, parent=None):
+        super(self.__class__, self).__init__(parent=parent)
+
+        self.create_ui()
+
+    def create_ui(self):
+
+        self.customize_ui()
+
+        self.controls_actions()
+
+    def controls_actions(self):
+        pass
+
+    def customize_ui(self):
+        pass

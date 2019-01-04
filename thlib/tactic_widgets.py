@@ -1,4 +1,5 @@
 import thlib.tactic_classes as tc
+from thlib.environment import dl
 
 # TODO Widgets matching TACTIC Standard widgets
 
@@ -184,9 +185,22 @@ class TacticEditWdg(TacticBaseWidget):
         # TODO make with threads
         stype = self.get_stype()
         project = stype.get_project()
+
         if self.view == 'edit':
+            # Logging info
+            dl.log('Making Commit Update for {}'.format(stype.get_pretty_name()), group_id=stype.get_code())
+            runtime_command = 'thenv.get_tc().server_start(project="{0}").update("{1}", {2})'.format(
+                project.get_code(), self.get_search_key(), str(data))
+            dl.info(runtime_command, group_id=stype.get_code())
+
             return tc.server_start(project=project.get_code()).update(self.get_search_key(), data)
         else:
+            # Logging info
+            dl.log('Making Commit Insert for {}'.format(stype.get_pretty_name()), group_id=stype.get_code())
+            runtime_command = 'thenv.get_tc().server_start(project="{0}").insert("{1}", {2}, parent_key="{3}")'.format(
+                project.get_code(), self.get_search_type(), str(data), self.get_parent_search_key())
+            dl.info(runtime_command, group_id=stype.get_code())
+
             return tc.server_start(project=project.get_code()).insert(self.get_search_type(), data, parent_key=self.get_parent_search_key())
 
     def set_base_edit_options(self, options_dict):

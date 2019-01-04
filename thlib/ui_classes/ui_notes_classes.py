@@ -50,7 +50,7 @@ class Ui_notesTabbedWidget(QtGui.QWidget):
         self.no_notes_label = QtGui.QLabel()
         self.no_notes_label.setText('No Notes...')
         self.no_notes_label.setAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
-        self.no_notes_label.setMinimumWidth(200)
+        # self.no_notes_label.setMinimumWidth(200)
 
     def toggle_no_notes_label(self):
         if self.notes_tab_widget.count() == 0:
@@ -134,7 +134,7 @@ class Ui_notesWidget(QtGui.QWidget, ui_notes.Ui_notes):
         self.sobject = None
         self.context = None
 
-        self.ui_richedit = richedit_widget.Ui_richeditWidget(self.replyTextEdit, False)
+        self.ui_richedit = richedit_widget.Ui_richeditWidget(self.replyTextEdit, True)
         self.editorLayout.addWidget(self.ui_richedit)
 
         self.controls_actions()

@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'checkin_out/ui_fast_controls.ui'
+# Form implementation generated from reading ui file 'checkin_out\ui_fast_controls.ui'
 #
-# Created: Fri Jun  8 17:10:18 2018
-#      by: pyside-uic 0.2.15 running on PySide 1.2.2
+# Created: Sat Dec 29 01:21:44 2018
+#      by: pyside-uic 0.2.15 running on PySide 1.2.4
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -13,12 +13,10 @@ from thlib.side.Qt import QtCore
 class Ui_fastControls(object):
     def setupUi(self, fastControls):
         fastControls.setObjectName("fastControls")
+        fastControls.resize(806, 30)
         self.horizontalLayout = QtGui.QHBoxLayout(fastControls)
         self.horizontalLayout.setContentsMargins(4, 4, 4, 6)
         self.horizontalLayout.setObjectName("horizontalLayout")
-        self.formatTypeComboBox = QtGui.QComboBox(fastControls)
-        self.formatTypeComboBox.setObjectName("formatTypeComboBox")
-        self.horizontalLayout.addWidget(self.formatTypeComboBox)
         self.checkinTypeLabel = QtGui.QLabel(fastControls)
         self.checkinTypeLabel.setTextFormat(QtCore.Qt.PlainText)
         self.checkinTypeLabel.setObjectName("checkinTypeLabel")
@@ -54,9 +52,9 @@ class Ui_fastControls(object):
         self.contextComboBox.setInsertPolicy(QtGui.QComboBox.NoInsert)
         self.contextComboBox.setObjectName("contextComboBox")
         self.horizontalLayout.addWidget(self.contextComboBox)
-        self.horizontalLayout.setStretch(3, 1)
-        self.horizontalLayout.setStretch(5, 1)
-        self.horizontalLayout.setStretch(9, 1)
+        self.horizontalLayout.setStretch(2, 1)
+        self.horizontalLayout.setStretch(4, 1)
+        self.horizontalLayout.setStretch(8, 1)
 
         self.retranslateUi(fastControls)
         QtCore.QMetaObject.connectSlotsByName(fastControls)

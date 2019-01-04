@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file './ui_main.ui'
 #
-# Created: Mon May  7 17:03:09 2018
-#      by: pyside-uic 0.2.15 running on PySide 1.2.2
+# Created: Fri Jan 04 15:31:54 2019
+#      by: pyside-uic 0.2.15 running on PySide 1.2.4
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -14,8 +14,6 @@ class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
         MainWindow.setWindowModality(QtCore.Qt.ApplicationModal)
-        MainWindow.resize(427, 276)
-        MainWindow.setMinimumSize(QtCore.QSize(427, 276))
         MainWindow.setStyleSheet("QTreeView {\n"
 "    show-decoration-selected: 1;\n"
 "}\n"
@@ -25,22 +23,22 @@ class Ui_MainWindow(object):
 "    border-color:  rgba(75, 75, 75, 75);\n"
 "    border-radius: 1px;\n"
 "    padding: 0px;\n"
-"    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 rgba(175, 175, 175, 25), stop: 1 rgba(175, 175, 175, 0));\n"
+"    background: rgba(175, 175, 175, 25);\n"
 "}\n"
 "\n"
 "QTreeView::item:hover {\n"
-"    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 rgba(175, 175, 175, 50), stop: 1 rgba(175, 175, 175, 0));\n"
+"    background: rgba(175, 175, 175, 50);\n"
 "    border: 1px solid rgba(128, 128, 128, 75);\n"
 "}\n"
 "QTreeView::item:selected {\n"
 "    border: 1px solid transparent;\n"
 "}\n"
 "QTreeView::item:selected:active{\n"
-"    background: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 rgba(82, 133, 166, 255), stop:1 rgba(0, 0, 0, 0));\n"
+"    background: rgba(82, 133, 166, 255);\n"
 "    border: 1px solid transparent;\n"
 "}\n"
 "QTreeView::item:selected:!active {\n"
-"    background: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 rgba(82, 133, 166, 255), stop:1 rgba(0, 0, 0, 0));\n"
+"    background: rgba(82, 133, 166, 255);\n"
 "    border: 1px solid transparent;\n"
 "}\n"
 "QTreeView::item:selected{\n"
@@ -48,12 +46,22 @@ class Ui_MainWindow(object):
 "    border: 1px solid transparent;\n"
 "}\n"
 "QDockWidget::title{\n"
-"    padding: 0px;\n"
+"    padding: 4px;\n"
+"    border-radius: 3px;\n"
+"    padding-left: 10px;\n"
+"    background-color: rgba(0,0,0,64);\n"
 "}\n"
 "QDockWidget::close-button, QDockWidget::float-button {\n"
 "    padding: 0px;\n"
 "}\n"
 "\n"
+"QDockWidget {\n"
+"    border: 0px ;\n"
+"    border-radius: 0px;\n"
+"}\n"
+"QDockWidget::close-button {\n"
+"    border: none;\n"
+"}\n"
 "QTabWidget::pane {\n"
 "    border: 0px;\n"
 "}\n"
@@ -98,13 +106,15 @@ class Ui_MainWindow(object):
         self.mainwidget.setObjectName("mainwidget")
         MainWindow.setCentralWidget(self.mainwidget)
         self.menubar = QtGui.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 427, 24))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 96, 21))
         self.menubar.setObjectName("menubar")
         self.menuConfig = QtGui.QMenu(self.menubar)
         self.menuConfig.setObjectName("menuConfig")
         self.menuProject = QtGui.QMenu(self.menubar)
         self.menuProject.setTearOffEnabled(True)
         self.menuProject.setObjectName("menuProject")
+        self.menuView = QtGui.QMenu(self.menubar)
+        self.menuView.setObjectName("menuView")
         MainWindow.setMenuBar(self.menubar)
         self.actionConfiguration = QtGui.QAction(MainWindow)
         self.actionConfiguration.setObjectName("actionConfiguration")
@@ -120,6 +130,15 @@ class Ui_MainWindow(object):
         self.actionDock_undock.setObjectName("actionDock_undock")
         self.actionDebug_Log = QtGui.QAction(MainWindow)
         self.actionDebug_Log.setObjectName("actionDebug_Log")
+        self.actionCheckin_Checkout = QtGui.QAction(MainWindow)
+        self.actionCheckin_Checkout.setCheckable(True)
+        self.actionCheckin_Checkout.setChecked(True)
+        self.actionCheckin_Checkout.setObjectName("actionCheckin_Checkout")
+        self.actionMy_Tactic = QtGui.QAction(MainWindow)
+        self.actionMy_Tactic.setCheckable(True)
+        self.actionMy_Tactic.setObjectName("actionMy_Tactic")
+        self.actionAssets_browser = QtGui.QAction(MainWindow)
+        self.actionAssets_browser.setObjectName("actionAssets_browser")
         self.menuConfig.addAction(self.actionConfiguration)
         self.menuConfig.addAction(self.actionApply_to_all_Tabs)
         self.menuConfig.addAction(self.actionDock_undock)
@@ -131,7 +150,10 @@ class Ui_MainWindow(object):
         self.menuConfig.addSeparator()
         self.menuConfig.addSeparator()
         self.menuConfig.addAction(self.actionExit)
+        self.menuView.addAction(self.actionCheckin_Checkout)
+        self.menuView.addAction(self.actionMy_Tactic)
         self.menubar.addAction(self.menuConfig.menuAction())
+        self.menubar.addAction(self.menuView.menuAction())
         self.menubar.addAction(self.menuProject.menuAction())
 
         self.retranslateUi(MainWindow)
@@ -141,6 +163,7 @@ class Ui_MainWindow(object):
         MainWindow.setWindowTitle(u"TACTIC handler")
         self.menuConfig.setTitle(u"Menu")
         self.menuProject.setTitle(u"Project")
+        self.menuView.setTitle(u"View")
         self.actionConfiguration.setText(u"Configuration")
         self.actionUpdate.setText(u"Update")
         self.actionExit.setText(u"Exit")
@@ -148,4 +171,7 @@ class Ui_MainWindow(object):
         self.actionServerside_Script.setText(u"Serverside Script")
         self.actionDock_undock.setText(u"Dock/undock")
         self.actionDebug_Log.setText(u"Debug Log")
+        self.actionCheckin_Checkout.setText(u"Checkin / Checkout")
+        self.actionMy_Tactic.setText(u"My Tactic")
+        self.actionAssets_browser.setText(u"Assets browser")
 

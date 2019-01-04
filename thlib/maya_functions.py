@@ -59,6 +59,15 @@ def reference_scene(file_path):
     cmds.file(file_path, r=True)
 
 
+def get_current_scene_foramt():
+    scene_format = cmds.file(query=True, type=True)
+
+    if scene_format:
+        return scene_format[0]
+    else:
+        return 'mayaBinary'
+
+
 def get_skey_from_scene():
     if cmds.attributeQuery('tacticHandler_skey', node='defaultObjectSet', exists=True):
         skey = cmds.getAttr('defaultObjectSet.tacticHandler_skey')
@@ -124,6 +133,25 @@ def get_maya_info_dict():
     return info_dict
 
 
+def get_temp_playblast():
+    current_frame = cmds.currentTime(query=True)
+    playblast_image = cmds.playblast(
+        forceOverwrite=True,
+        format='image',
+        completeFilename='tactic_handler_temp_playblast.jpg',
+        showOrnaments=False,
+        widthHeight=[960, 540],
+        sequenceTime=False,
+        frame=[current_frame],
+        compression='jpg',
+        offScreen=False,
+        viewer=False,
+        percent=100
+    )
+
+    return playblast_image
+
+
 def inplace_checkin(virtual_snapshot, repo_name, update_versionless, only_versionless=False, generate_icons=True,
                     selected_objects=False, ext_type='mayaAscii', setting_workspace=False):
 
@@ -160,7 +188,7 @@ def inplace_checkin(virtual_snapshot, repo_name, update_versionless, only_versio
     except:
         saved = False
 
-    check_ok = True
+    # check_ok = True
 
     files_objects_list = []
 
@@ -212,6 +240,8 @@ def inplace_checkin(virtual_snapshot, repo_name, update_versionless, only_versio
             generate_icons,
             files_objects_list,
         )
+    else:
+        check_ok = False
 
     return check_ok, files_objects_list
 

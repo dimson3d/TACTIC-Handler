@@ -25,7 +25,7 @@ class Ui_tasksWidgetMain(QtGui.QMainWindow):
         super(self.__class__, self).__init__(parent=parent)
 
         self.task_widget = Ui_tasksWidget(sobject, self)
-        self.setWindowTitle('Tasks for: ' + sobject.info['name'])
+        self.setWindowTitle('Tasks for: ' + sobject.get_title())
         self.setCentralWidget(self.task_widget)
         self.setContentsMargins(0, 4, 0, 0)
         self.statusBar()
@@ -230,7 +230,7 @@ class Ui_tasksWidget(QtGui.QWidget, ui_tasks.Ui_tasks):
             self.dock_widget = QtGui.QDockWidget()
             self.dock_widget.setObjectName('notes_dock')
             self.dock_widget.setWindowTitle('Notes')
-            self.dock_widget.setMinimumWidth(500)
+            # self.dock_widget.setMinimumWidth(500)
             self.ui_notes = notes_widget.Ui_notesWidget()
             if current_item:
                 self.ui_notes.task_item = current_item

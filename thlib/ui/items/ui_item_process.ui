@@ -53,7 +53,6 @@
      </property>
      <property name="styleSheet">
       <string notr="true">QLabel {
-	background: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:.4, stop:0 rgba(128, 128, 128, 75), stop:1 rgba(64, 64,64, 0));
 	padding: 0px;
 }</string>
      </property>

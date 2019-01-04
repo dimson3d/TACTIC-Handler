@@ -24,6 +24,11 @@ def singleton(cls):
     return get_instance()
 
 
+def get_tc():
+    import tactic_classes as tc
+    return tc
+
+
 def env_write_config(obj=None, filename='settings', unique_id='', sub_id=None, update_file=False, long_abs_path=False):
     """
     Converts python objects to json, then writes it to disk.

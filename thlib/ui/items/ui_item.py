@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'items/ui_item.ui'
+# Form implementation generated from reading ui file 'items\ui_item.ui'
 #
-# Created: Fri Jun  8 17:04:36 2018
-#      by: pyside-uic 0.2.15 running on PySide 1.2.2
+# Created: Mon Dec 31 01:39:11 2018
+#      by: pyside-uic 0.2.15 running on PySide 1.2.4
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -35,9 +35,9 @@ class Ui_item(object):
         self.previewLabel.setMinimumSize(QtCore.QSize(64, 64))
         self.previewLabel.setMaximumSize(QtCore.QSize(64, 64))
         self.previewLabel.setStyleSheet("QLabel {\n"
-"    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 rgba(175, 175, 175, 16), stop: 1 rgba(0, 0, 0, 0));\n"
+"    background: rgba(175, 175, 175, 16);\n"
 "    border: 0px;\n"
-"    border-radius: 4px;\n"
+"    border-radius: 3px;\n"
 "    padding: 0px 0px;\n"
 "}")
         self.previewLabel.setTextFormat(QtCore.Qt.RichText)
@@ -61,7 +61,6 @@ class Ui_item(object):
         self.fileNameLabel.setFont(font)
         self.fileNameLabel.setStyleSheet("QLabel {\n"
 "    background-color: transparent;\n"
-"    border-bottom: 2px solid qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 rgba(128, 128, 128, 64), stop:1 rgba(128, 128,128, 0));\n"
 "}")
         self.fileNameLabel.setTextFormat(QtCore.Qt.PlainText)
         self.fileNameLabel.setObjectName("fileNameLabel")
@@ -136,3 +135,4 @@ class Ui_item(object):
         self.gridLayout.setRowStretch(2, 1)
 
         QtCore.QMetaObject.connectSlotsByName(item)
+

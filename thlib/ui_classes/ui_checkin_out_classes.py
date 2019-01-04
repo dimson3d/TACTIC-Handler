@@ -731,8 +731,6 @@ class Ui_checkInOutWidget(QtGui.QMainWindow):
         self.fill_gear_menu()
         self.fill_collapsable_toolbar()
 
-        self.add_items_to_formats_combo()
-
         # self.controls_actions()
         # self.threads_actions()
 
@@ -795,6 +793,7 @@ class Ui_checkInOutWidget(QtGui.QMainWindow):
         self.fast_controls_tool_bar.setFloatable(False)
         self.fast_controls_tool_bar.setAllowedAreas(QtCore.Qt.BottomToolBarArea | QtCore.Qt.TopToolBarArea)
 
+        self.fast_controls_tool_bar.setHidden(True)
         self.addToolBar(QtCore.Qt.BottomToolBarArea, self.fast_controls_tool_bar)
 
     @gf.catch_error
@@ -817,6 +816,7 @@ class Ui_checkInOutWidget(QtGui.QMainWindow):
         self.drop_plate_dock.setFeatures(
             QtGui.QDockWidget.DockWidgetMovable | QtGui.QDockWidget.DockWidgetClosable)
 
+        self.drop_plate_dock.setHidden(True)
         self.addDockWidget(QtCore.Qt.BottomDockWidgetArea, self.drop_plate_dock)
 
     @gf.catch_error
@@ -849,6 +849,7 @@ class Ui_checkInOutWidget(QtGui.QMainWindow):
         self.description_dock.setFeatures(
             QtGui.QDockWidget.DockWidgetMovable | QtGui.QDockWidget.DockWidgetClosable)
 
+        self.description_dock.setHidden(True)
         self.addDockWidget(QtCore.Qt.RightDockWidgetArea, self.description_dock)
 
     @gf.catch_error
@@ -865,6 +866,7 @@ class Ui_checkInOutWidget(QtGui.QMainWindow):
         self.columns_viewer_dock.setFeatures(
             QtGui.QDockWidget.DockWidgetMovable | QtGui.QDockWidget.DockWidgetClosable)
 
+        self.columns_viewer_dock.setHidden(True)
         self.addDockWidget(QtCore.Qt.BottomDockWidgetArea, self.columns_viewer_dock)
 
     # @gf.catch_error
@@ -918,13 +920,6 @@ class Ui_checkInOutWidget(QtGui.QMainWindow):
 
         self.checkin_options_dock.setHidden(True)
         self.addDockWidget(QtCore.Qt.LeftDockWidgetArea, self.checkin_options_dock)
-
-    def add_items_to_formats_combo(self):
-        if env_mode.get_mode() == 'maya':
-            self.fast_controls_tool_bar_widget.formatTypeComboBox.addItem('mayaAscii')
-            self.fast_controls_tool_bar_widget.formatTypeComboBox.addItem('mayaBinary')
-        else:
-            self.fast_controls_tool_bar_widget.formatTypeComboBox.setVisible(False)
 
     def get_fast_controls_widget(self):
         return self.fast_controls_tool_bar_widget
@@ -1374,43 +1369,36 @@ class Ui_checkInOutWidget(QtGui.QMainWindow):
 
     def fill_collapsable_toolbar(self):
 
-        self.naming_editor_button = QtGui.QToolButton()
-        self.naming_editor_button.setMaximumSize(22, 22)
-        self.naming_editor_button.setAutoRaise(True)
-        self.naming_editor_button.setIcon(gf.get_icon('list-ul'))
-        self.naming_editor_button.clicked.connect(self.create_naming_editor_widget)
-        self.naming_editor_button.setToolTip('Naming Editor for Current Search Type')
+        # self.naming_editor_button = QtGui.QToolButton()
+        # self.naming_editor_button.setMaximumSize(22, 22)
+        # self.naming_editor_button.setAutoRaise(True)
+        # self.naming_editor_button.setIcon(gf.get_icon('list-ul'))
+        # self.naming_editor_button.clicked.connect(self.create_naming_editor_widget)
+        # self.naming_editor_button.setToolTip('Naming Editor for Current Search Type')
 
         self.filter_process_button = QtGui.QToolButton()
-        self.filter_process_button.setMaximumSize(22, 22)
+        # self.filter_process_button.setMaximumSize(22, 22)
         self.filter_process_button.setAutoRaise(True)
         self.filter_process_button.setIcon(gf.get_icon('filter'))
         self.filter_process_button.clicked.connect(self.create_process_tree_widget)
         self.filter_process_button.setToolTip('Filter current Tree of Processes and Child Search Types')
 
-        # self.toggle_search_options_button = QtGui.QToolButton()
-        # self.toggle_search_options_button.setMaximumSize(22, 22)
-        # self.toggle_search_options_button.setAutoRaise(True)
-        # self.toggle_search_options_button.setIcon(gf.get_icon('search', scale_factor=0.95))
-        # self.toggle_search_options_button.clicked.connect(self.toggle_search_group_box)
-        # self.toggle_search_options_button.setToolTip('Toggle Advanced Search')
-
         self.toggle_advanced_search_button = QtGui.QToolButton()
-        self.toggle_advanced_search_button.setMaximumSize(22, 22)
+        # self.toggle_advanced_search_button.setMaximumSize(22, 22)
         self.toggle_advanced_search_button.setAutoRaise(True)
         self.toggle_advanced_search_button.setIcon(gf.get_icon('search', scale_factor=0.95))
         self.toggle_advanced_search_button.clicked.connect(self.toggle_advanced_search_widget)
         self.toggle_advanced_search_button.setToolTip('Toggle Advanced Search')
 
         self.add_new_sobject_button = QtGui.QToolButton()
-        self.add_new_sobject_button.setMaximumSize(22, 22)
+        # self.add_new_sobject_button.setMaximumSize(22, 22)
         self.add_new_sobject_button.setAutoRaise(True)
         self.add_new_sobject_button.setIcon(gf.get_icon('plus-square'))
         self.add_new_sobject_button.clicked.connect(self.add_new_sobject)
         self.add_new_sobject_button.setToolTip('Add new {0}'.format(self.stype.get_pretty_name()))
 
         self.find_opened_sobject_button = QtGui.QToolButton()
-        self.find_opened_sobject_button.setMaximumSize(22, 22)
+        # self.find_opened_sobject_button.setMaximumSize(22, 22)
         self.find_opened_sobject_button.setAutoRaise(True)
         self.find_opened_sobject_button.setIcon(gf.get_icon('magic'))
         self.find_opened_sobject_button.clicked.connect(self.find_opened_sobject)
@@ -1418,7 +1406,6 @@ class Ui_checkInOutWidget(QtGui.QMainWindow):
 
         self.search_widget.add_widget_to_collapsable_toolbar(self.add_new_sobject_button)
         self.search_widget.add_widget_to_collapsable_toolbar(self.filter_process_button)
-        # self.search_widget.add_widget_to_collapsable_toolbar(self.toggle_search_options_button)
         self.search_widget.add_widget_to_collapsable_toolbar(self.toggle_advanced_search_button)
         # removed until naming editor created
         # self.search_widget.add_widget_to_collapsable_toolbar(self.naming_editor_button)
@@ -1504,21 +1491,21 @@ class Ui_checkInOutWidget(QtGui.QMainWindow):
         self.open_dialog = ui_maya_dialogs_classes.Ui_openOptionsWidget(file_path, current_tree_widget_item)
         self.open_dialog.show()
 
-    def import_file_options(self):
-        file_path = self.get_current_item_paths()[0]
-        nested_item = self.current_tree_item_widget
-
-        if env_mode.get_mode() == 'maya':
-            self.import_dialog = ui_maya_dialogs_classes.Ui_importOptionsWidget(file_path, nested_item)
-            self.import_dialog.show()
-
-    def reference_file_options(self):
-        file_path = self.get_current_item_paths()[0]
-        nested_item = self.current_tree_item_widget
-
-        if env_mode.get_mode() == 'maya':
-            self.reference_dialog = ui_maya_dialogs_classes.Ui_referenceOptionsWidget(file_path, nested_item)
-            self.reference_dialog.show()
+    # def import_file_options(self):
+    #     file_path = self.get_current_item_paths()[0]
+    #     nested_item = self.current_tree_item_widget
+    #
+    #     if env_mode.get_mode() == 'maya':
+    #         self.import_dialog = ui_maya_dialogs_classes.Ui_importOptionsWidget(file_path, nested_item)
+    #         self.import_dialog.show()
+    #
+    # def reference_file_options(self):
+    #     file_path = self.get_current_item_paths()[0]
+    #     nested_item = self.current_tree_item_widget
+    #
+    #     if env_mode.get_mode() == 'maya':
+    #         self.reference_dialog = ui_maya_dialogs_classes.Ui_referenceOptionsWidget(file_path, nested_item)
+    #         self.reference_dialog.show()
 
     def get_repo_menu(self, watch_folder_dict):
 
@@ -1542,14 +1529,21 @@ class Ui_checkInOutWidget(QtGui.QMainWindow):
     def open_file(self):
 
         if env_mode.get_mode() == 'maya':
-            file_path, dir_path, all_process = self.get_current_item_paths()
-            mf.open_scene(file_path, dir_path, all_process)
-        else:
-            # print 'opening standalone'
             current_results_widget = self.get_current_results_widget()
             current_tree_widget_item = current_results_widget.get_current_tree_widget_item()
 
             current_snapshot = current_tree_widget_item.get_snapshot()
+
+            for tp, fl in current_snapshot.get_files_objects(group_by='type').items():
+                if tp in ['main', 'maya']:
+                    mf.open_scene(fl[0].get_full_abs_path(), None, None)
+                    break
+        else:
+            current_results_widget = self.get_current_results_widget()
+            current_tree_widget_item = current_results_widget.get_current_tree_widget_item()
+
+            current_snapshot = current_tree_widget_item.get_snapshot()
+
             for tp, fl in current_snapshot.get_files_objects(group_by='type').items():
                 if tp not in ['web', 'icon']:
                     fl[0].open_file()
@@ -1629,21 +1623,21 @@ class Ui_checkInOutWidget(QtGui.QMainWindow):
             else:
                 repo_menu.actions()[0].triggered.emit()
 
-    def import_file(self):
-        file_path = self.get_current_item_paths()[0]
-
-        if env_mode.get_mode() == 'maya':
-            mf.import_scene(file_path)
-        else:
-            pass
-
-    def reference_file(self):
-        file_path = self.get_current_item_paths()[0]
-
-        if env_mode.get_mode() == 'maya':
-            mf.reference_scene(file_path)
-        else:
-            pass
+    # def import_file(self):
+    #     file_path = self.get_current_item_paths()[0]
+    #
+    #     if env_mode.get_mode() == 'maya':
+    #         mf.import_scene(file_path)
+    #     else:
+    #         pass
+    #
+    # def reference_file(self):
+    #     file_path = self.get_current_item_paths()[0]
+    #
+    #     if env_mode.get_mode() == 'maya':
+    #         mf.reference_scene(file_path)
+    #     else:
+    #         pass
 
     # Saving functions
     def checkin_file_objects(self, search_key, context, description, save_revision=False, snapshot_version=None,
@@ -1653,7 +1647,6 @@ class Ui_checkInOutWidget(QtGui.QMainWindow):
         if files_objects is None:
             files_objects = self.drop_plate_widget.get_selected_items()
 
-        print(checkin_type)
         if checkin_type is None:
             checkin_type = self.fast_controls_tool_bar_widget.get_checkin_mode()
         if keep_file_name is None:
@@ -1727,7 +1720,11 @@ class Ui_checkInOutWidget(QtGui.QMainWindow):
     def checkin_from_maya(self, search_key, context, description, save_revision=False, snapshot_version=None,
                           selected_objects=None):
 
-        ext_type = self.fast_controls_tool_bar_widget.formatTypeComboBox.currentText()
+        # print(selected_objects, 'SELECTED')
+        # ext_type = self.fast_controls_tool_bar_widget.formatTypeComboBox.currentText()
+
+        ext_type = mf.get_current_scene_foramt()
+
         types = {
             'mayaBinary': 'mb',
             'mayaAscii': 'ma',
@@ -1764,6 +1761,9 @@ class Ui_checkInOutWidget(QtGui.QMainWindow):
 
         files_objects_dict = match_template.get_files_objects(['/path/maya.{0}'.format(types[ext_type])])
 
+        current_results_widget = self.get_current_results_widget()
+        current_tree_widget_item = current_results_widget.get_current_tree_widget_item()
+
         return tc.checkin_file(
             search_key=search_key,
             context=context,
@@ -1783,6 +1783,7 @@ class Ui_checkInOutWidget(QtGui.QMainWindow):
             create_icon=True,
             # parent_wdg=self,
             ignore_keep_file_name=ignore_keep_file_name,
+            item_widget=current_tree_widget_item,
             checkin_app='maya',
             selected_objects=selected_objects[0],
             ext_type=ext_type,
@@ -1944,7 +1945,6 @@ class Ui_checkInOutWidget(QtGui.QMainWindow):
     # def checkin_maya(self):
     
     def refresh_results(self):
-
         self.description_widget.set_item(None)
         self.columns_viewer_widget.set_item(None)
         self.fast_controls_tool_bar_widget.set_item(None)
@@ -1981,7 +1981,15 @@ class Ui_checkInOutWidget(QtGui.QMainWindow):
         """
         self.add_sobject = ui_addsobject_classes.Ui_addTacticSobjectWidget(stype=self.stype, parent=self)
 
+        dl.log('Adding new SObject to {}'.format(self.stype.get_pretty_name()), group_id=self.stype.get_code())
+
+        runtime_command = 'thenv.env_inst.get_check_tree("{0}", "{1}", "{2}").add_new_sobject()'.format(
+            self.project.get_code(), 'checkin_out', self.stype.get_code())
+        dl.info(runtime_command, group_id=self.stype.get_code())
+
         self.add_sobject.show()
+
+        return self.add_sobject
 
     @gf.catch_error
     def delete_selected_sobjects(self):
@@ -2101,7 +2109,6 @@ class Ui_checkInOutWidget(QtGui.QMainWindow):
             self.project.get_code(),
             tab_name[1]
         )
-
         self.set_settings_from_dict(
             env_read_config(
                 filename='ui_checkin_out',
